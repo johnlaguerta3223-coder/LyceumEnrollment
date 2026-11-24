@@ -276,13 +276,13 @@ export default function StudentDashboard({
         setReminderEmail(res.data.profile.email);
       }
     } catch (err: any) {
-      if (err?.response?.status === 401) {
+      if (err?.response?.status === 401 || err?.response?.status === 403) {
         onLogout();
         return;
       }
       setBannerMsg({
         type: "error",
-        text: "Could not load student records. Please log in again.",
+        text: "Could not load student records. The server may still be waking up — please click Retry.",
       });
     } finally {
       setLoading(false);
@@ -382,13 +382,53 @@ export default function StudentDashboard({
     }
   };
 
-  if (loading || !profile || !billing) {
+  if (loading) {
     return (
       <div className="portal-loading-screen">
         <div className="portal-loading-card">
           <img src="/logo.jpg" alt="LKA Logo" className="portal-loading-logo" />
           <h3>Loading Student Portal...</h3>
-          <p>Fetching your enrollment profile and billing records.</p>
+          <p>Connecting to server and fetching your records.</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!profile || !billing) {
+    return (
+      <div className="portal-loading-screen">
+        <div className="portal-loading-card">
+          <img src="/logo.jpg" alt="LKA Logo" className="portal-loading-logo" />
+          <h3>Unable to Load Student Portal</h3>
+          <p>
+            The server may be waking up or your session expired. Please try
+            again or return to the login screen.
+          </p>
+          <div
+            style={{
+              display: "flex",
+              gap: "10px",
+              justifyContent: "center",
+              marginTop: "16px",
+              flexWrap: "wrap",
+            }}
+          >
+            <button
+              type="button"
+              className="login-btn"
+              style={{ width: "auto", padding: "10px 20px" }}
+              onClick={() => fetchStudentData()}
+            >
+              Retry Connection
+            </button>
+            <button
+              type="button"
+              className="portal-logout-btn"
+              onClick={onLogout}
+            >
+              Back to Login
+            </button>
+          </div>
         </div>
       </div>
     );

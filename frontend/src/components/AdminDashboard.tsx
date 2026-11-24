@@ -178,13 +178,13 @@ export default function AdminDashboard({
       setCollectionReport(res.data.collection_report || []);
       setUsers(res.data.users || []);
     } catch (err: any) {
-      if (err?.response?.status === 401) {
+      if (err?.response?.status === 401 || err?.response?.status === 403) {
         onLogout();
         return;
       }
       setBannerMsg({
         type: "error",
-        text: "Could not load Admin Dashboard data. Please check backend connection.",
+        text: "Could not load Admin Dashboard data. Please click Retry.",
       });
     } finally {
       setLoading(false);
@@ -375,16 +375,55 @@ export default function AdminDashboard({
     }
   };
 
-  if (loading || !analytics) {
+  if (loading) {
     return (
       <div className="portal-loading-screen">
         <div className="portal-loading-card">
           <img src="/logo.jpg" alt="LKA Logo" className="portal-loading-logo" />
           <h3>Loading LKA Administrator Portal...</h3>
           <p>
-            Fetching school-wide enrollment analytics, tuition collections, and
-            system settings.
+            Connecting to server and fetching school-wide analytics and settings.
           </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!analytics) {
+    return (
+      <div className="portal-loading-screen">
+        <div className="portal-loading-card">
+          <img src="/logo.jpg" alt="LKA Logo" className="portal-loading-logo" />
+          <h3>Unable to Load Admin Portal</h3>
+          <p>
+            The server may be waking up or your session expired. Please try
+            again or return to the login screen.
+          </p>
+          <div
+            style={{
+              display: "flex",
+              gap: "10px",
+              justifyContent: "center",
+              marginTop: "16px",
+              flexWrap: "wrap",
+            }}
+          >
+            <button
+              type="button"
+              className="login-btn"
+              style={{ width: "auto", padding: "10px 20px" }}
+              onClick={() => fetchAdminOverview()}
+            >
+              Retry Connection
+            </button>
+            <button
+              type="button"
+              className="portal-logout-btn"
+              onClick={onLogout}
+            >
+              Back to Login
+            </button>
+          </div>
         </div>
       </div>
     );
