@@ -699,8 +699,7 @@ export default function RegistrarDashboard({
       <div className="portal-loading-screen">
         <div className="portal-loading-card">
           <img src="/logo.jpg" alt="LKA Logo" className="portal-loading-logo" />
-          <h3>Loading LKA Registrar Portal...</h3>
-          <p>Fetching enrolled students, pending registrations, and billing.</p>
+          <h3>Loading Portal...</h3>
         </div>
       </div>
     );

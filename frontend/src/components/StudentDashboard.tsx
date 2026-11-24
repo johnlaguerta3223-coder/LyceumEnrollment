@@ -387,8 +387,7 @@ export default function StudentDashboard({
       <div className="portal-loading-screen">
         <div className="portal-loading-card">
           <img src="/logo.jpg" alt="LKA Logo" className="portal-loading-logo" />
-          <h3>Loading Student Portal...</h3>
-          <p>Connecting to server and fetching your records.</p>
+          <h3>Loading Portal...</h3>
         </div>
       </div>
     );

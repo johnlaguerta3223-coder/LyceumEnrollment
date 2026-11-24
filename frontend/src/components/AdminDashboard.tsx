@@ -380,10 +380,7 @@ export default function AdminDashboard({
       <div className="portal-loading-screen">
         <div className="portal-loading-card">
           <img src="/logo.jpg" alt="LKA Logo" className="portal-loading-logo" />
-          <h3>Loading LKA Administrator Portal...</h3>
-          <p>
-            Connecting to server and fetching school-wide analytics and settings.
-          </p>
+          <h3>Loading Portal...</h3>
         </div>
       </div>
     );
