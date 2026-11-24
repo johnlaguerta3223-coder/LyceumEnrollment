@@ -13,9 +13,7 @@ type AppPage =
 
 interface NetworkProfile {
   tier: "strong" | "moderate" | "weak";
-  bars: 1 | 2 | 3 | 4;
   label: string;
-  speedText: string;
   durationMs: number;
 }
 
@@ -38,29 +36,23 @@ function detectNetworkProfile(): NetworkProfile {
   ) {
     return {
       tier: "weak",
-      bars: 1,
-      label: "Weak Signal Detected",
-      speedText: `${downlink.toFixed(1)} Mbps · ${rtt}ms latency`,
-      durationMs: 4400,
+      label: "Slow internet detected — loading...",
+      durationMs: 2400,
     };
   }
 
   if (effectiveType === "3g" || downlink < 4.0 || rtt > 180) {
     return {
       tier: "moderate",
-      bars: 2,
-      label: "Moderate Signal",
-      speedText: `${downlink.toFixed(1)} Mbps · ${rtt}ms latency`,
-      durationMs: 2400,
+      label: "Moderate internet — loading...",
+      durationMs: 1300,
     };
   }
 
   return {
     tier: "strong",
-    bars: 4,
-    label: "Strong Signal",
-    speedText: `${downlink.toFixed(1)} Mbps · ${rtt}ms latency`,
-    durationMs: 950,
+    label: "Loading...",
+    durationMs: 550,
   };
 }
 
@@ -165,7 +157,10 @@ function App() {
     const pct = Math.min(100, Math.round(loadingProgress));
     return (
       <div className="portal-loading-screen">
-        <div className="portal-loading-card adaptive-loader-card">
+        <div
+          className="portal-loading-card adaptive-loader-card"
+          style={{ maxWidth: "340px", padding: "28px 24px" }}
+        >
           <div className="loader-spinner-wrap">
             <div
               className={`loader-ring ${
@@ -183,13 +178,11 @@ function App() {
             />
           </div>
 
-          <h3>Opening {loadingRoleLabel}...</h3>
-          <p className="loader-step-text">
-            {pct < 38
-              ? "Verifying account session..."
-              : pct < 78
-              ? "Syncing student ledger & clearance records..."
-              : "Preparing dashboard workspace..."}
+          <h3 style={{ marginTop: "8px", marginBottom: "6px" }}>
+            Opening {loadingRoleLabel}
+          </h3>
+          <p className="loader-step-text" style={{ marginBottom: "14px" }}>
+            {netProfile.label}
           </p>
 
           <div className="loader-progress-track">
@@ -197,21 +190,6 @@ function App() {
               className="loader-progress-fill"
               style={{ width: `${pct}%` }}
             />
-          </div>
-
-          <div className="loader-meta-row">
-            <div className={`signal-pill ${netProfile.tier}`}>
-              <span className="signal-bars" aria-hidden="true">
-                <i className={netProfile.bars >= 1 ? "on" : ""} />
-                <i className={netProfile.bars >= 2 ? "on" : ""} />
-                <i className={netProfile.bars >= 3 ? "on" : ""} />
-                <i className={netProfile.bars >= 4 ? "on" : ""} />
-              </span>
-              <span>
-                {netProfile.label} ({netProfile.speedText})
-              </span>
-            </div>
-            <strong className="loader-pct">{pct}%</strong>
           </div>
         </div>
       </div>
