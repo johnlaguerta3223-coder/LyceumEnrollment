@@ -716,14 +716,14 @@ export default function LoginForm({
                 <div className="hoa-field">
                   <label htmlFor="email">
                     <IconMail size={14} />
-                    <span>Email Address</span>
+                    <span>Username</span>
                   </label>
                   <input
                     id="email"
-                    type="email"
+                    type="text"
                     required
-                    autoComplete="email"
-                    placeholder="account@email.com"
+                    autoComplete="username"
+                    placeholder="Enter username"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                   />
