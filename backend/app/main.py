@@ -57,23 +57,26 @@ def create_tables_and_seed_users():
         ("enrollment_status", "VARCHAR DEFAULT 'Pending Downpayment'"),
     ]
 
-    with engine.connect() as conn:
-        cols = [
-            row[1]
-            for row in conn.execute(text("PRAGMA table_info(parents)")).fetchall()
-        ]
-        for col_name, col_type in new_columns:
-            if col_name not in cols:
-                conn.execute(
-                    text(f"ALTER TABLE parents ADD COLUMN {col_name} {col_type}")
-                )
-        pn_cols = [
-            row[1]
-            for row in conn.execute(text("PRAGMA table_info(promissory_notes)")).fetchall()
-        ]
-        if pn_cols and "student_id_no" not in pn_cols:
-            conn.execute(text("DROP TABLE promissory_notes"))
-        conn.commit()
+    if engine.dialect.name == "sqlite":
+        with engine.connect() as conn:
+            cols = [
+                row[1]
+                for row in conn.execute(text("PRAGMA table_info(parents)")).fetchall()
+            ]
+            for col_name, col_type in new_columns:
+                if col_name not in cols:
+                    conn.execute(
+                        text(f"ALTER TABLE parents ADD COLUMN {col_name} {col_type}")
+                    )
+            pn_cols = [
+                row[1]
+                for row in conn.execute(
+                    text("PRAGMA table_info(promissory_notes)")
+                ).fetchall()
+            ]
+            if pn_cols and "student_id_no" not in pn_cols:
+                conn.execute(text("DROP TABLE promissory_notes"))
+            conn.commit()
     Base.metadata.create_all(bind=engine)
 
     db = SessionLocal()
