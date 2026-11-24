@@ -150,7 +150,9 @@ export default function AdminDashboard({
   >("all");
   const [resettingUserId, setResettingUserId] = useState<number | null>(null);
   const [resetNewPass, setResetNewPass] = useState<string>("");
-  const [sidebarOpen, setSidebarOpen] = useState<boolean>(true);
+  const [sidebarOpen, setSidebarOpen] = useState<boolean>(() =>
+    typeof window !== "undefined" ? window.innerWidth > 920 : true
+  );
   const [userMenuOpen, setUserMenuOpen] = useState<boolean>(false);
   const [currentTime, setCurrentTime] = useState<Date>(() => new Date());
 
@@ -455,7 +457,24 @@ export default function AdminDashboard({
   return (
     <div className="lka-app-shell">
       {/* ===== HOA-STYLE LEFT SIDEBAR ===== */}
-      <aside className={`lka-sidebar ${sidebarOpen ? "" : "collapsed"}`}>
+      {sidebarOpen && (
+        <div
+          className="lka-sidebar-backdrop"
+          onClick={() => setSidebarOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+      <aside
+        className={`lka-sidebar ${sidebarOpen ? "" : "collapsed"}`}
+        onClick={(e) => {
+          if (
+            window.innerWidth <= 920 &&
+            (e.target as HTMLElement).closest(".lka-nav-item")
+          ) {
+            setSidebarOpen(false);
+          }
+        }}
+      >
         <div className="lka-sidebar-brand">
           <img src="/logo.jpg" alt="LKA Logo" className="lka-sidebar-logo" />
           <div>

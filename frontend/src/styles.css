@@ -4935,14 +4935,34 @@ button:not(:disabled):active,
   }
 }
 
+.lka-sidebar-backdrop {
+  display: none;
+}
+
 @media (max-width: 920px) {
+  .lka-sidebar-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.45);
+    z-index: 110;
+  }
   .lka-sidebar {
     position: fixed;
     left: 0;
     top: 0;
-    box-shadow: 12px 0 30px rgba(0, 0, 0, 0.12);
+    bottom: 0;
+    width: 260px;
+    max-width: 82vw;
+    z-index: 120;
+    box-shadow: 12px 0 30px rgba(0, 0, 0, 0.16);
   }
-  .lka-finance-row-2 {
+  .lka-main-area {
+    width: 100%;
+    min-width: 0;
+  }
+  .lka-finance-row-2,
+  .portal-two-col {
     grid-template-columns: 1fr;
   }
   .lka-welcome-banner {
@@ -4958,14 +4978,33 @@ button:not(:disabled):active,
   .lka-workspace-card {
     padding: 16px 14px;
   }
+  .table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
 }
 
 @media (max-width: 600px) {
   .lka-stat-row-5 {
     grid-template-columns: 1fr;
   }
+  .lka-topbar {
+    padding: 10px 12px;
+    gap: 8px;
+  }
   .lka-topbar-title {
     display: none;
+  }
+  .lka-welcome-banner {
+    padding: 18px 16px;
+  }
+  .lka-welcome-banner h1 {
+    font-size: 1.3rem;
+  }
+  .lka-reminder-banner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
   }
 }
 
