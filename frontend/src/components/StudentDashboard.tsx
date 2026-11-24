@@ -1644,35 +1644,6 @@ export default function StudentDashboard({
                   </div>
                 </div>
 
-                <form onSubmit={handleSendPaymentReminder}>
-                  <div className="field">
-                    <label>
-                      Student / Parent Account for Billing Reminders
-                    </label>
-                    <div className="input-wrap with-icon">
-                      <span className="input-icon">
-                        <IconMail size={17} />
-                      </span>
-                      <input
-                        type="email"
-                        required
-                        value={reminderEmail}
-                        onChange={(e) => setReminderEmail(e.target.value)}
-                      />
-                    </div>
-                  </div>
-
-                  <button
-                    type="submit"
-                    className="login-btn"
-                    disabled={sendingReminder}
-                  >
-                    {sendingReminder
-                      ? "Sending Payment Reminder..."
-                      : "Send Payment Reminder to This Student →"}
-                  </button>
-                </form>
-
                 {/* Sent Payment Reminders History List */}
                 <div style={{ marginTop: "22px" }}>
                   <span className="soa-switcher-label">
@@ -1719,8 +1690,8 @@ export default function StudentDashboard({
                   <div>
                     <h3>Payment Reminder Notification Preview</h3>
                     <p>
-                      Exact email message sent to the parent/guardian&apos;s
-                      inbox
+                      Billing reminder sent by the School Registrar to your
+                      Student/Parent Portal
                     </p>
                   </div>
                 </div>
