@@ -1145,9 +1145,9 @@ export default function StudentDashboard({
                   <div>
                     <h3>Installment Payment Schedule</h3>
                     <p>
-                      Settle your due installment at the LKA School Cashier or
-                      via GCash (0926-549-3089) and claim your physical Official
-                      Receipt (OR) at school.
+                      Settle your due installment onsite at the LKA School
+                      Cashier and claim your physical Official Receipt (OR) at
+                      school.
                     </p>
                   </div>
                 </div>

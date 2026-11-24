@@ -294,9 +294,7 @@ export default function RegistrarDashboard({
   const [newStuPlan, setNewStuPlan] = useState<
     "cash" | "quarterly" | "monthly"
   >("monthly");
-  const [newStuMethod, setNewStuMethod] = useState<
-    "gcash" | "cash" | "online_banking"
-  >("cash");
+  const [newStuMethod, setNewStuMethod] = useState<"cash">("cash");
 
   useEffect(() => {
     const timer = window.setInterval(() => {
@@ -1107,15 +1105,9 @@ export default function RegistrarDashboard({
                   <select
                     className="form-select"
                     value={newStuMethod}
-                    onChange={(e) =>
-                      setNewStuMethod(
-                        e.target.value as "gcash" | "cash" | "online_banking"
-                      )
-                    }
+                    onChange={(e) => setNewStuMethod(e.target.value as "cash")}
                   >
                     <option value="cash">Cash at School Cashier</option>
-                    <option value="gcash">GCash</option>
-                    <option value="online_banking">Online Banking</option>
                   </select>
                 </div>
 
@@ -1296,10 +1288,6 @@ export default function RegistrarDashboard({
                         <option value="Cash at LKA School Cashier">
                           Cash at LKA School Cashier
                         </option>
-                        <option value="GCash (0926-549-3089)">
-                          GCash (0926-549-3089)
-                        </option>
-                        <option value="Online Banking">Online Banking</option>
                       </select>
                     </div>
 
@@ -1749,12 +1737,6 @@ export default function RegistrarDashboard({
                                   >
                                     <option value="Cash at LKA School Cashier">
                                       Cash at LKA School Cashier
-                                    </option>
-                                    <option value="GCash (0926-549-3089)">
-                                      GCash (0926-549-3089)
-                                    </option>
-                                    <option value="Online Banking">
-                                      Online Banking
                                     </option>
                                   </select>
                                 </div>

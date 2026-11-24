@@ -359,9 +359,7 @@ export default function LoginForm({
 
   // Step 3: Payment Plan & Account Credentials
   const [paymentPlan, setPaymentPlan] = useState<PaymentPlanKey>("monthly");
-  const [paymentMethod, setPaymentMethod] = useState<
-    "gcash" | "cash" | "online_banking"
-  >("gcash");
+  const [paymentMethod, setPaymentMethod] = useState<"cash">("cash");
   const [regEmail, setRegEmail] = useState("");
   const [regPassword, setRegPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -1254,20 +1252,11 @@ export default function LoginForm({
                           className="form-select"
                           value={paymentMethod}
                           onChange={(e) =>
-                            setPaymentMethod(
-                              e.target.value as
-                                | "gcash"
-                                | "cash"
-                                | "online_banking"
-                            )
+                            setPaymentMethod(e.target.value as "cash")
                           }
                         >
-                          <option value="gcash">
-                            GCash (Fast 5-Minute Verification)
-                          </option>
-                          <option value="cash">Cash at School Cashier</option>
-                          <option value="online_banking">
-                            Online Banking Transfer
+                          <option value="cash">
+                            Cash at School Cashier (Onsite Payment)
                           </option>
                         </select>
                       </div>

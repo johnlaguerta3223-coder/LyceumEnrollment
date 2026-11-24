@@ -45,7 +45,7 @@ class RegisterRequest(BaseModel):
     relationship_to_student: Optional[str] = "Mother"
     previous_school: Optional[str] = None
     payment_plan: Optional[str] = "monthly"
-    payment_method: Optional[str] = "gcash"
+    payment_method: Optional[str] = "cash"
     requirements_submitted: Optional[List[str]] = None
     email: str
     phone: str
@@ -399,9 +399,9 @@ def build_email_reminder_record(
         f"• Amount Due: ₱{amount_due:,.2f}\n"
         f"• Due Date Schedule: {due_date}\n"
         f"• Remaining Annual Balance: ₱{remaining_bal:,.2f}\n\n"
-        f"You may settle your payment via GCash (0926-549-3089), Online Banking, "
-        f"or Cash at the School Cashier (Mon–Fri, 8:00 AM–12:00 NN & 1:00 PM–5:00 PM), "
-        f"or log in to your LKA Student Portal.\n\n"
+        f"Please settle your payment onsite at the School Cashier "
+        f"(Mon–Fri, 8:00 AM–12:00 NN & 1:00 PM–5:00 PM) and claim your "
+        f"Official Receipt (OR) at school.\n\n"
         f"Thank you for your continued support!\n"
         f"Lyceum ng Kabataan Academy, Inc. · Brgy. Bagong Silang, Caloocan City"
     )
@@ -505,7 +505,7 @@ def register(payload: RegisterRequest, db: Session = Depends(get_db)):
         relationship_to_student=payload.relationship_to_student or "Mother",
         previous_school=payload.previous_school or "N/A",
         payment_plan=payload.payment_plan or "monthly",
-        payment_method=payload.payment_method or "gcash",
+        payment_method=payload.payment_method or "cash",
         amount_paid=0.0,
         requirements_submitted=reqs_json,
         enrollment_status="Pending Registrar Verification",
@@ -581,6 +581,11 @@ def login(
             detail="This account has been deactivated by the School Administrator.",
         )
     user_role = getattr(user, "role", None) or "parent"
+    if user_role == "parent" and (user.enrollment_status or "") != "Officially Enrolled":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Your enrollment is pending payment and Registrar approval. Please pay onsite at the school cashier and wait for the Registrar to approve your account before logging in.",
+        )
     token = create_access_token(data={"sub": user.email, "role": user_role})
     display_name = user.student_name or user.name
     return {
@@ -614,7 +619,7 @@ def get_student_portal_data(
     if not current_user.payment_plan:
         current_user.payment_plan = "monthly"
     if not current_user.payment_method:
-        current_user.payment_method = "gcash"
+        current_user.payment_method = "cash"
     if not current_user.parent_guardian_name:
         current_user.parent_guardian_name = "Maria Santos Dela Cruz"
     if not current_user.relationship_to_student:

@@ -47,7 +47,7 @@ const FAQS: FaqItem[] = [
   {
     question: "How can we pay the tuition fee?",
     answer:
-      "We accept GCash, Cash, and Online Banking. You can pay in Full (with a 10% Cash Discount), Quarterly (downpayment upon enrollment + 4 payments before exams in August, October, January, and March), or Monthly (downpayment upon enrollment + 10 monthly payments from June to March, due every 15th–30th).",
+      "All tuition payments are settled onsite at the School Cashier. You can pay in Full (with a 10% Cash Discount), Quarterly (downpayment upon enrollment + 4 payments before exams in August, October, January, and March), or Monthly (downpayment upon enrollment + 10 monthly payments from June to March, due every 15th–30th).",
   },
   {
     question: "What school activities do students join?",
@@ -1135,7 +1135,8 @@ export default function HomePage({
               <h4>Choose Payment Plan</h4>
               <p>
                 Select Full Cash (with 10% discount), Quarterly (4 exams), or
-                Monthly (10 months) and pay via GCash, Cash, or Online Banking.
+                Monthly (10 months) and settle your payment onsite at the
+                School Cashier.
               </p>
             </div>
 
