@@ -993,7 +993,14 @@ export default function RegistrarDashboard({
                     <select
                       className="form-select"
                       value={newStuGrade}
-                      onChange={(e) => setNewStuGrade(e.target.value)}
+                      onChange={(e) => {
+                        const grade = e.target.value;
+                        setNewStuGrade(grade);
+                        const afternoonGrades = ["Grade 4", "Grade 5", "Grade 6"];
+                        setNewStuShift(
+                          afternoonGrades.includes(grade) ? "afternoon" : "morning"
+                        );
+                      }}
                     >
                       {[
                         "Kinder 1",
@@ -1012,7 +1019,7 @@ export default function RegistrarDashboard({
                     </select>
                   </div>
                   <div className="field">
-                    <label>Class Shift</label>
+                    <label>Class Shift (Auto by Grade)</label>
                     <select
                       className="form-select"
                       value={newStuShift}
@@ -1020,8 +1027,20 @@ export default function RegistrarDashboard({
                         setNewStuShift(e.target.value as "morning" | "afternoon")
                       }
                     >
-                      <option value="morning">Morning Shift</option>
-                      <option value="afternoon">Afternoon Shift</option>
+                      <option value="morning">
+                        Morning Shift (
+                        {newStuGrade.startsWith("Kinder")
+                          ? "7:00 AM – 9:30 AM"
+                          : "7:00 AM – 12:00 NN"}
+                        )
+                      </option>
+                      <option value="afternoon">
+                        Afternoon Shift (
+                        {newStuGrade.startsWith("Kinder")
+                          ? "12:00 NN – 2:30 PM"
+                          : "12:00 NN – 5:00 PM"}
+                        )
+                      </option>
                     </select>
                   </div>
                 </div>

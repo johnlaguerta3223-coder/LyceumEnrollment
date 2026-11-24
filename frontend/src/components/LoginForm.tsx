@@ -906,7 +906,20 @@ export default function LoginForm({
                             id="grade-level"
                             className="form-select"
                             value={gradeLevel}
-                            onChange={(e) => setGradeLevel(e.target.value)}
+                            onChange={(e) => {
+                              const grade = e.target.value;
+                              setGradeLevel(grade);
+                              const afternoonGrades = [
+                                "Grade 4",
+                                "Grade 5",
+                                "Grade 6",
+                              ];
+                              setClassShift(
+                                afternoonGrades.includes(grade)
+                                  ? "afternoon"
+                                  : "morning"
+                              );
+                            }}
                           >
                             {GRADE_LEVELS.map((lvl) => (
                               <option key={lvl} value={lvl}>
