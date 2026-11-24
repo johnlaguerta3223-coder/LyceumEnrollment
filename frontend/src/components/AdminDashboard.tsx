@@ -1454,6 +1454,7 @@ export default function AdminDashboard({
                           style={{
                             marginTop: "10px",
                             display: "flex",
+                            flexWrap: "wrap",
                             gap: "8px",
                             alignItems: "center",
                           }}
@@ -1461,30 +1462,44 @@ export default function AdminDashboard({
                           <input
                             type="text"
                             required
+                            minLength={6}
                             placeholder="Enter new password (min 6 chars)"
                             className="form-select"
-                            style={{ padding: "7px 10px", flex: 1 }}
+                            style={{
+                              padding: "8px 12px",
+                              flex: "1 1 200px",
+                              minWidth: "180px",
+                              width: "100%",
+                            }}
                             value={resetNewPass}
                             onChange={(e) => setResetNewPass(e.target.value)}
                           />
-                          <button
-                            type="submit"
-                            className="table-pay-btn"
-                            disabled={processing}
-                          >
-                            Save
-                          </button>
-                          <button
-                            type="button"
-                            className="step-back-btn"
-                            style={{ padding: "6px 10px", fontSize: "0.75rem" }}
-                            onClick={() => {
-                              setResettingUserId(null);
-                              setResetNewPass("");
-                            }}
-                          >
-                            Cancel
-                          </button>
+                          <div style={{ display: "flex", gap: "6px", flexShrink: 0 }}>
+                            <button
+                              type="submit"
+                              className="table-pay-btn"
+                              style={{ width: "auto", padding: "8px 14px" }}
+                              disabled={processing}
+                            >
+                              Save
+                            </button>
+                            <button
+                              type="button"
+                              className="step-back-btn"
+                              style={{
+                                width: "auto",
+                                flex: "0 0 auto",
+                                padding: "8px 14px",
+                                fontSize: "0.78rem",
+                              }}
+                              onClick={() => {
+                                setResettingUserId(null);
+                                setResetNewPass("");
+                              }}
+                            >
+                              Cancel
+                            </button>
+                          </div>
                         </form>
                       )}
 
