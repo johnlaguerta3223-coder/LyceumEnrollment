@@ -1841,8 +1841,8 @@ export default function RegistrarDashboard({
                       Students with Upcoming Installments ({dueStudents.length})
                     </h3>
                     <p>
-                      Send automated email reminders before monthly due dates
-                      (15th–30th) and quarterly exams (Aug, Oct, Jan, Mar)
+                      Send automated portal payment reminders before monthly due
+                      dates (15th–30th) and quarterly exams (Aug, Oct, Jan, Mar)
                     </p>
                   </div>
                 </div>
@@ -1854,8 +1854,8 @@ export default function RegistrarDashboard({
                     onClick={handleSendBulkReminders}
                     disabled={processingAction || dueStudents.length === 0}
                   >
-                    <IconMail size={16} /> Send Payment Reminder Emails to All{" "}
-                    {dueStudents.length} Parent Account(s) →
+                    <IconMail size={16} /> Send Payment Reminders to All{" "}
+                    {dueStudents.length} Student Account(s) →
                   </button>
                 </div>
 
@@ -1901,7 +1901,7 @@ export default function RegistrarDashboard({
                         >
                           <small>
                             {latestRem
-                              ? `Last Email Sent: ${latestRem.sent_at}`
+                              ? `Last Reminder Sent: ${latestRem.sent_at}`
                               : "No reminder sent yet"}
                           </small>
                           <div style={{ display: "flex", gap: "8px" }}>
@@ -1915,7 +1915,7 @@ export default function RegistrarDashboard({
                                 }}
                                 onClick={() => setPreviewReminder(latestRem)}
                               >
-                                Preview Email
+                                Preview Reminder
                               </button>
                             )}
                             <button
@@ -1924,7 +1924,7 @@ export default function RegistrarDashboard({
                               onClick={() => handleSendSingleReminder(stu)}
                               disabled={processingAction}
                             >
-                              Send Email Reminder
+                              Send Payment Reminder
                             </button>
                           </div>
                         </div>
@@ -1941,10 +1941,10 @@ export default function RegistrarDashboard({
                     <IconCalculator size={19} />
                   </span>
                   <div>
-                    <h3>Parent Email Reminder Preview</h3>
+                    <h3>Student / Parent Payment Reminder Preview</h3>
                     <p>
-                      Exact billing reminder sent to the parent/guardian&apos;s
-                      email address
+                      Exact billing reminder sent directly to the
+                      student/parent&apos;s portal account
                     </p>
                   </div>
                 </div>
@@ -1978,9 +1978,9 @@ export default function RegistrarDashboard({
                   </div>
                 ) : (
                   <p className="empty-table-note">
-                    Click <strong>Preview Email</strong> or{" "}
-                    <strong>Send Email Reminder</strong> on any student to view
-                    the email message.
+                    Click <strong>Preview Reminder</strong> or{" "}
+                    <strong>Send Payment Reminder</strong> on any student to
+                    view the reminder message.
                   </p>
                 )}
               </div>

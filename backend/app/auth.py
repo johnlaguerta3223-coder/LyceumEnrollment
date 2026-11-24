@@ -406,7 +406,7 @@ def build_email_reminder_record(
         f"Lyceum ng Kabataan Academy, Inc. · Brgy. Bagong Silang, Caloocan City"
     )
 
-    delivery_status = "Email Notification Logged & Sent to Inbox"
+    delivery_status = "Payment Reminder Sent to Student Portal"
     smtp_user = os.getenv("SMTP_USER")
     smtp_pass = os.getenv("SMTP_PASSWORD")
     if smtp_user and smtp_pass:

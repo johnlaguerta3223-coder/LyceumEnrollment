@@ -697,7 +697,7 @@ export default function StudentDashboard({
             >
               <span className="lka-nav-item-left">
                 <IconMail size={16} />
-                <span>Email Reminders</span>
+                <span>Payment Reminders</span>
               </span>
               <span className="lka-nav-badge">{reminders.length}</span>
             </button>
@@ -1563,11 +1563,11 @@ export default function StudentDashboard({
                     <IconMail size={19} />
                   </span>
                   <div>
-                    <h3>Automated Payment Reminder Notifications</h3>
+                    <h3>Automated Payment Reminders</h3>
                     <p>
-                      Sends automatic email reminders to parents before monthly
-                      due dates (15th–30th) and quarterly exams so schedules are
-                      never forgotten.
+                      Sends automatic billing reminders inside the
+                      Student/Parent Portal before monthly due dates (15th–30th)
+                      and quarterly exams so schedules are never forgotten.
                     </p>
                   </div>
                 </div>
@@ -1575,7 +1575,7 @@ export default function StudentDashboard({
                 <div className="enroll-assessment-box">
                   <div className="assessment-header">
                     <IconCalendar size={16} />
-                    <strong>Next Scheduled Email Reminder</strong>
+                    <strong>Next Scheduled Payment Reminder</strong>
                   </div>
                   <div className="assessment-rows">
                     <div className="assessment-row">
@@ -1608,7 +1608,7 @@ export default function StudentDashboard({
                 <form onSubmit={handleSendPaymentReminder}>
                   <div className="field">
                     <label>
-                      Parent / Student Email Address for Billing Reminders
+                      Student / Parent Account for Billing Reminders
                     </label>
                     <div className="input-wrap with-icon">
                       <span className="input-icon">
@@ -1629,15 +1629,15 @@ export default function StudentDashboard({
                     disabled={sendingReminder}
                   >
                     {sendingReminder
-                      ? "Sending Reminder Email..."
-                      : "Send Payment Reminder Email Now →"}
+                      ? "Sending Payment Reminder..."
+                      : "Send Payment Reminder to This Student →"}
                   </button>
                 </form>
 
-                {/* Sent Email Reminders History List */}
+                {/* Sent Payment Reminders History List */}
                 <div style={{ marginTop: "22px" }}>
                   <span className="soa-switcher-label">
-                    Sent Email Reminder Log ({reminders.length}):
+                    Portal Payment Reminder Log ({reminders.length}):
                   </span>
                   <div className="promissory-list">
                     {reminders.map((rem) => (
@@ -1678,7 +1678,7 @@ export default function StudentDashboard({
                     <IconCheck size={19} />
                   </span>
                   <div>
-                    <h3>Official Email Notification Preview</h3>
+                    <h3>Payment Reminder Notification Preview</h3>
                     <p>
                       Exact email message sent to the parent/guardian&apos;s
                       inbox
