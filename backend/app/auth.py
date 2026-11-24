@@ -514,11 +514,7 @@ def register(payload: RegisterRequest, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(new_parent)
 
-    # Automatically create initial email reminder notification upon registration
     billing = compute_student_billing(new_parent)
-    initial_reminder = build_email_reminder_record(new_parent, billing)
-    db.add(initial_reminder)
-    db.commit()
 
     return {
         "message": "Online registration submitted! Please bring all required physical documents and tuition payment to the LKA Registrar Office for official enrollment.",
@@ -648,16 +644,6 @@ def get_student_portal_data(
         .order_by(PaymentReminder.id.desc())
         .all()
     )
-    if not reminders:
-        first_rem = build_email_reminder_record(current_user, billing)
-        db.add(first_rem)
-        db.commit()
-        reminders = (
-            db.query(PaymentReminder)
-            .filter(PaymentReminder.user_id == current_user.id)
-            .order_by(PaymentReminder.id.desc())
-            .all()
-        )
 
     promissory_notes = (
         db.query(PromissoryNote)
@@ -1136,10 +1122,6 @@ def registrar_create_student_account(
     db.commit()
     db.refresh(new_student)
 
-    billing = compute_student_billing(new_student)
-    db.add(build_email_reminder_record(new_student, billing))
-    db.commit()
-
     return {
         "message": f"Student Account created for {new_student.student_name} ({student_id_no} · {assigned_sec})! You can now verify their requirements and record their payment in Pending Registrations.",
         "student_id_no": student_id_no,
@@ -1318,11 +1300,6 @@ def registrar_officially_enroll_student(
         student.assigned_section = assign_section_for_student(
             student.grade_level or "Grade 1", student.class_shift or "morning"
         )
-    db.commit()
-
-    # Log an automated email reminder for the student's next installment
-    rem = build_email_reminder_record(student, compute_student_billing(student))
-    db.add(rem)
     db.commit()
 
     return {

@@ -1650,33 +1650,41 @@ export default function StudentDashboard({
                     Portal Payment Reminder Log ({reminders.length}):
                   </span>
                   <div className="promissory-list">
-                    {reminders.map((rem) => (
-                      <div
-                        key={rem.id}
-                        className="promissory-card"
-                        style={{
-                          cursor: "pointer",
-                          borderColor:
-                            selectedEmailPreview?.id === rem.id
-                              ? "#d43783"
-                              : undefined,
-                        }}
-                        onClick={() => setSelectedEmailPreview(rem)}
-                      >
-                        <div className="promissory-card-top">
-                          <strong>{rem.installment_title}</strong>
-                          <span className="sched-badge paid">
-                            {rem.delivery_status}
-                          </span>
+                    {reminders.length === 0 ? (
+                      <p className="empty-table-note">
+                        No payment reminders issued by the Registrar yet.
+                      </p>
+                    ) : (
+                      reminders.map((rem) => (
+                        <div
+                          key={rem.id}
+                          className="promissory-card"
+                          style={{
+                            cursor: "pointer",
+                            borderColor:
+                              selectedEmailPreview?.id === rem.id
+                                ? "#d43783"
+                                : undefined,
+                          }}
+                          onClick={() => setSelectedEmailPreview(rem)}
+                        >
+                          <div className="promissory-card-top">
+                            <strong>{rem.installment_title}</strong>
+                            <span className="sched-badge paid">
+                              {rem.delivery_status}
+                            </span>
+                          </div>
+                          <p>
+                            To: <strong>{rem.recipient_email}</strong> · Due:{" "}
+                            <strong>{formatPeso(rem.amount_due)}</strong> (
+                            {rem.due_date})
+                          </p>
+                          <small>
+                            Sent on {rem.sent_at} · Click to preview
+                          </small>
                         </div>
-                        <p>
-                          To: <strong>{rem.recipient_email}</strong> · Due:{" "}
-                          <strong>{formatPeso(rem.amount_due)}</strong> (
-                          {rem.due_date})
-                        </p>
-                        <small>Sent on {rem.sent_at} · Click to preview</small>
-                      </div>
-                    ))}
+                      ))
+                    )}
                   </div>
                 </div>
               </div>
@@ -1725,7 +1733,8 @@ export default function StudentDashboard({
                   </div>
                 ) : (
                   <p className="empty-table-note">
-                    Select a reminder from the list to view the email content.
+                    No payment reminders yet. Reminders issued by the Registrar
+                    will appear here.
                   </p>
                 )}
               </div>
