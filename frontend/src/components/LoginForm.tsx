@@ -644,13 +644,13 @@ export default function LoginForm({
     setLoading(true);
     try {
       const res = await axios.post(`${API_BASE}/api/auth/forgot-username`, {
-        student_name: fuName,
+        email: fuName,
         phone: fuPhone,
       });
       setFoundAccount(res.data);
       setStatus({
         type: "success",
-        text: "Account found! Your registered username is shown below.",
+        text: "Account verified! Your username is shown below.",
       });
     } catch (err: any) {
       const detail = err.response?.data?.detail;
@@ -659,7 +659,7 @@ export default function LoginForm({
         text:
           typeof detail === "string"
             ? detail
-            : "No account found matching that name and mobile number.",
+            : "No account found matching that email address and mobile number.",
       });
     } finally {
       setLoading(false);
@@ -1701,23 +1701,23 @@ export default function LoginForm({
                 <span className="auth-step-tag">Account Recovery</span>
                 <h2>Find Your Username</h2>
                 <p className="subtitle">
-                  Enter the student&apos;s full name and registered mobile number
-                  to recover your username.
+                  Enter your registered email address and mobile number to
+                  verify your account and view your username.
                 </p>
               </div>
 
               <form onSubmit={handleForgotUsernameSubmit}>
                 <div className="field">
-                  <label htmlFor="fu-name">Student / Account Full Name</label>
+                  <label htmlFor="fu-email">Registered Email Address</label>
                   <div className="input-wrap with-icon">
                     <span className="input-icon">
-                      <IconUser size={17} />
+                      <IconMail size={17} />
                     </span>
                     <input
-                      id="fu-name"
-                      type="text"
+                      id="fu-email"
+                      type="email"
                       required
-                      placeholder="e.g. Mark Laguerta"
+                      placeholder="example@gmail.com"
                       value={fuName}
                       onChange={(e) => setFuName(e.target.value)}
                     />
