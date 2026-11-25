@@ -375,10 +375,14 @@ export default function RegistrarDashboard({
   }, [token]);
 
   const enrolledStudents = students.filter(
-    (s) => s.enrollment_status === "Officially Enrolled"
+    (s) =>
+      s.enrollment_status === "Officially Enrolled" ||
+      s.enrollment_status === "Conditionally Enrolled (Requirements To Follow)"
   );
   const pendingStudents = students.filter(
-    (s) => s.enrollment_status !== "Officially Enrolled"
+    (s) =>
+      s.enrollment_status !== "Officially Enrolled" &&
+      s.enrollment_status !== "Conditionally Enrolled (Requirements To Follow)"
   );
   const dueStudents = enrolledStudents.filter(
     (s) => s.billing.remaining_balance > 0
@@ -1658,7 +1662,7 @@ export default function RegistrarDashboard({
                     const dpPaid =
                       selectedPendingStudent.billing.amount_paid + 0.5 >=
                       selectedPendingStudent.billing.downpayment_required;
-                    const canEnroll = allReqsDone && dpPaid;
+                    const canEnroll = dpPaid;
 
                     return (
                       <div className="portal-panel-card">
@@ -1936,8 +1940,10 @@ export default function RegistrarDashboard({
                             }
                           >
                             {canEnroll
-                              ? `Officially Enroll ${selectedPendingStudent.student_name} & Unlock Student Portal →`
-                              : "Complete Step 1 (Requirements) & Step 2 (Payment) to Enroll"}
+                              ? allReqsDone
+                                ? `Officially Enroll ${selectedPendingStudent.student_name} & Unlock Student Portal →`
+                                : `Enroll ${selectedPendingStudent.student_name} (Missing Requirements To Follow) →`
+                              : "Complete Step 2 (Payment) to Enroll"}
                           </button>
                         </div>
                       </div>

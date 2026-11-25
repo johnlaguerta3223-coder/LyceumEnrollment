@@ -936,7 +936,11 @@ def login(
             detail="This account has been deactivated by the School Administrator.",
         )
     user_role = getattr(user, "role", None) or "parent"
-    if user_role == "parent" and (user.enrollment_status or "") != "Officially Enrolled":
+    allowed_statuses = (
+        "Officially Enrolled",
+        "Conditionally Enrolled (Requirements To Follow)",
+    )
+    if user_role == "parent" and (user.enrollment_status or "") not in allowed_statuses:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Your enrollment is pending payment and Registrar approval. Please pay onsite at the school cashier and wait for the Registrar to approve your account before logging in.",
@@ -1568,9 +1572,22 @@ def registrar_update_student_requirements(
         raise HTTPException(status_code=404, detail="Student record not found.")
 
     student.requirements_submitted = json.dumps(payload.requirements_submitted)
+    s_type = (student.student_type or "new").lower()
+    req_keys = REQUIREMENTS_KEYS_BY_TYPE.get(
+        s_type, REQUIREMENTS_KEYS_BY_TYPE["new"]
+    )
+    missing_reqs = [k for k in req_keys if k not in payload.requirements_submitted]
+    upgraded_msg = ""
+    if (
+        not missing_reqs
+        and student.enrollment_status
+        == "Conditionally Enrolled (Requirements To Follow)"
+    ):
+        student.enrollment_status = "Officially Enrolled"
+        upgraded_msg = " All requirements complete — student is now Officially Enrolled!"
     db.commit()
     return {
-        "message": f"Physical requirements updated for {student.student_name or student.name}."
+        "message": f"Physical requirements updated for {student.student_name or student.name}.{upgraded_msg}"
     }
 
 
@@ -1650,20 +1667,21 @@ def registrar_officially_enroll_student(
         s_type, REQUIREMENTS_KEYS_BY_TYPE["new"]
     )
     missing_reqs = [k for k in req_keys if k not in reqs]
-    if missing_reqs:
-        raise HTTPException(
-            status_code=400,
-            detail="Cannot officially enroll student yet: All physical hardcopy requirements must be received and checked first.",
-        )
 
     billing = compute_student_billing(student)
     if billing["amount_paid"] + 0.5 < billing["downpayment_required"]:
         raise HTTPException(
             status_code=400,
-            detail=f"Cannot officially enroll student yet: Initial tuition/downpayment of ₱{billing['downpayment_required']:,.2f} must be paid first.",
+            detail=f"Cannot enroll student yet: Initial tuition/downpayment of ₱{billing['downpayment_required']:,.2f} must be paid first.",
         )
 
-    student.enrollment_status = "Officially Enrolled"
+    if missing_reqs:
+        student.enrollment_status = "Conditionally Enrolled (Requirements To Follow)"
+        status_note = f"Conditionally Enrolled ({len(missing_reqs)} requirement(s) to follow). Student Portal is unlocked; will become Officially Enrolled once all requirements are submitted."
+    else:
+        student.enrollment_status = "Officially Enrolled"
+        status_note = "now Officially Enrolled! Their full Student Portal Dashboard is now unlocked."
+
     if not student.assigned_section:
         student.assigned_section = assign_section_for_student(
             student.grade_level or "Grade 1", student.class_shift or "morning"
@@ -1671,7 +1689,7 @@ def registrar_officially_enroll_student(
     db.commit()
 
     return {
-        "message": f"{student.student_name} ({student.student_id_no}) is now Officially Enrolled! Their full Student Portal Dashboard is now unlocked."
+        "message": f"{student.student_name} ({student.student_id_no}) — {status_note}"
     }
 
 
@@ -1691,10 +1709,13 @@ def registrar_send_student_payment_reminder(
         raise HTTPException(status_code=404, detail="Student record not found.")
 
     billing = compute_student_billing(student)
-    if (student.enrollment_status or "") != "Officially Enrolled":
+    if (student.enrollment_status or "") not in (
+        "Officially Enrolled",
+        "Conditionally Enrolled (Requirements To Follow)",
+    ):
         raise HTTPException(
             status_code=400,
-            detail=f"{student.student_name} is not Officially Enrolled yet.",
+            detail=f"{student.student_name} is not enrolled yet.",
         )
     if billing["remaining_balance"] <= 0:
         raise HTTPException(
@@ -1719,7 +1740,12 @@ def registrar_send_bulk_payment_reminders(
         db.query(Parent)
         .filter(
             Parent.role == "parent",
-            Parent.enrollment_status == "Officially Enrolled",
+            Parent.enrollment_status.in_(
+                [
+                    "Officially Enrolled",
+                    "Conditionally Enrolled (Requirements To Follow)",
+                ]
+            ),
         )
         .all()
     )

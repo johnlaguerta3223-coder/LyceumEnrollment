@@ -453,7 +453,9 @@ export default function StudentDashboard({
       : "Monthly Plan (10 Months)";
 
   const isOfficiallyEnrolled =
-    profile.enrollment_status === "Officially Enrolled";
+    profile.enrollment_status === "Officially Enrolled" ||
+    profile.enrollment_status ===
+      "Conditionally Enrolled (Requirements To Follow)";
 
   if (!isOfficiallyEnrolled) {
     return (
@@ -832,6 +834,26 @@ export default function StudentDashboard({
                     {profile.shift_hours} · Permit Code:{" "}
                     <strong>{profile.exam_permit_code || "LKA-EXM-2026"}</strong>
                   </p>
+                  {profile.enrollment_status ===
+                    "Conditionally Enrolled (Requirements To Follow)" && (
+                    <div
+                      style={{
+                        marginBottom: "12px",
+                        padding: "8px 12px",
+                        borderRadius: "10px",
+                        background: "#fef3c7",
+                        border: "1px solid #fde68a",
+                        color: "#92400e",
+                        fontSize: "0.82rem",
+                        fontWeight: 600,
+                      }}
+                    >
+                      Conditionally Enrolled ({submittedCount} of{" "}
+                      {reqList.length} requirements submitted) — Submit missing
+                      hardcopies at the Registrar Office to become Officially
+                      Enrolled.
+                    </div>
+                  )}
                   <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
                     <button
                       type="button"
