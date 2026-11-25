@@ -410,6 +410,51 @@ def build_email_reminder_record(
         f"Lyceum ng Kabataan Academy, Inc. · Brgy. Bagong Silang, Caloocan City"
     )
 
+    logo_url = "https://lyceum-enrollment.vercel.app/logo.jpg"
+    portal_url = "https://lyceum-enrollment.vercel.app"
+    html_body = f"""<!DOCTYPE html>
+<html>
+<body style="margin:0;padding:0;background:#fdf4f8;font-family:'Segoe UI',Arial,sans-serif;color:#1e293b;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="padding:24px 12px;">
+    <tr>
+      <td align="center">
+        <table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border:1px solid #f3d5e6;border-radius:16px;overflow:hidden;">
+          <tr>
+            <td align="center" style="background:linear-gradient(135deg,#ec4899 0%,#db2777 100%);padding:24px 20px;color:#ffffff;">
+              <img src="{logo_url}" alt="Lyceum ng Kabataan Academy Logo" width="68" height="68" style="border-radius:50%;border:3px solid #ffffff;background:#ffffff;display:block;margin:0 auto 10px;" />
+              <div style="font-size:17px;font-weight:700;letter-spacing:0.2px;">Lyceum ng Kabataan Academy, Inc.</div>
+              <div style="font-size:12px;opacity:0.92;margin-top:2px;">Official Tuition &amp; Billing Payment Reminder</div>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:24px 22px;font-size:14px;line-height:1.6;">
+              <p style="margin:0 0 12px;">Dear <strong>{guardian_name}</strong>,</p>
+              <p style="margin:0 0 16px;">Good day! This is a friendly payment reminder for your child, <strong>{student_name}</strong> ({user.student_id_no} &middot; {grade_lvl}).</p>
+              <table width="100%" cellpadding="0" cellspacing="0" style="background:#fdf8fb;border:1px solid #f3d5e6;border-radius:12px;padding:14px 16px;margin-bottom:16px;">
+                <tr><td style="padding:4px 0;color:#64748b;font-size:13px;">Upcoming Payment:</td><td align="right" style="padding:4px 0;font-weight:700;color:#0f172a;font-size:13px;">{inst_title}</td></tr>
+                <tr><td style="padding:4px 0;color:#64748b;font-size:13px;">Amount Due:</td><td align="right" style="padding:4px 0;font-weight:800;color:#db2777;font-size:15px;">&#8369;{amount_due:,.2f}</td></tr>
+                <tr><td style="padding:4px 0;color:#64748b;font-size:13px;">Due Date Schedule:</td><td align="right" style="padding:4px 0;font-weight:600;color:#0f172a;font-size:13px;">{due_date}</td></tr>
+                <tr><td style="padding:4px 0;color:#64748b;font-size:13px;">Remaining Annual Balance:</td><td align="right" style="padding:4px 0;font-weight:700;color:#0f172a;font-size:13px;">&#8369;{remaining_bal:,.2f}</td></tr>
+              </table>
+              <p style="margin:0 0 12px;">Please settle your payment onsite at the <strong>School Cashier</strong> (Mon&ndash;Fri, 8:00 AM&ndash;12:00 NN &amp; 1:00 PM&ndash;5:00 PM) and claim your Official Receipt (OR) at school.</p>
+              <p style="margin:0 0 18px;padding:10px 12px;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;font-size:13px;color:#92400e;"><strong>Need extra time before the periodical exam?</strong> You may submit a <strong>Digital Promissory Note</strong> in your Student/Parent Portal to request a 1-week grace period (&#8369;0.00 late penalty) for Registrar approval.</p>
+              <div style="text-align:center;margin:18px 0 6px;">
+                <a href="{portal_url}" style="display:inline-block;background:#db2777;color:#ffffff;text-decoration:none;font-weight:700;font-size:13px;padding:11px 22px;border-radius:999px;">Open Student &amp; Parent Portal &rarr;</a>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td align="center" style="background:#fdf8fb;border-top:1px solid #f3e8ef;padding:14px 18px;font-size:11.5px;color:#64748b;">
+              Lyceum ng Kabataan Academy, Inc. &middot; Brgy. Bagong Silang, Caloocan City
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>"""
+
     delivery_status = "Portal Saved (Set BREVO_API_KEY for Live Email on Render)"
     brevo_key = (os.getenv("BREVO_API_KEY") or "").strip()
     resend_key = (os.getenv("RESEND_API_KEY") or "").strip()
@@ -429,6 +474,7 @@ def build_email_reminder_record(
                     "to": [{"email": recipient, "name": guardian_name}],
                     "subject": subject,
                     "textContent": body,
+                    "htmlContent": html_body,
                 }
             ).encode("utf-8")
             req = urllib.request.Request(
