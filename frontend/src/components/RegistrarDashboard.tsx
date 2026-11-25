@@ -338,15 +338,6 @@ export default function RegistrarDashboard({
             : "Upon Enrollment Downpayment (Miscellaneous Fee)"
         );
       }
-
-      if (!previewReminder) {
-        const firstWithRem = list.find(
-          (s) => s.payment_reminders && s.payment_reminders.length > 0
-        );
-        if (firstWithRem && firstWithRem.payment_reminders.length > 0) {
-          setPreviewReminder(firstWithRem.payment_reminders[0]);
-        }
-      }
     } catch (err: any) {
       if (err?.response?.status === 401) {
         onLogout();
