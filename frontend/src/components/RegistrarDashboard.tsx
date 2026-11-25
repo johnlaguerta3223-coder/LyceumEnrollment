@@ -1873,8 +1873,8 @@ export default function RegistrarDashboard({
                     onClick={handleSendBulkReminders}
                     disabled={processingAction || dueStudents.length === 0}
                   >
-                    <IconMail size={16} /> Send Live Gmail &amp; Portal Reminders
-                    to All {dueStudents.length} Eligible Student(s) →
+                    <IconMail size={16} /> Send Email &amp; Portal Reminders to
+                    All {dueStudents.length} Eligible Student(s) →
                   </button>
                 </div>
 
@@ -1943,7 +1943,7 @@ export default function RegistrarDashboard({
                               onClick={() => handleSendSingleReminder(stu)}
                               disabled={processingAction}
                             >
-                              Send Live Gmail &amp; Portal Reminder
+                              Send Email &amp; Portal Reminder
                             </button>
                           </div>
                         </div>
