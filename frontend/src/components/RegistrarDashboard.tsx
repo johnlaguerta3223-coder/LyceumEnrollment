@@ -293,7 +293,24 @@ export default function RegistrarDashboard({
   const [newStuParent, setNewStuParent] = useState<string>("");
   const [newStuPhone, setNewStuPhone] = useState<string>("");
   const [newStuEmail, setNewStuEmail] = useState<string>("");
+  const [usernameManualEdit, setUsernameManualEdit] = useState<boolean>(false);
   const [newStuPassword, setNewStuPassword] = useState<string>("");
+
+  const generateStudentUsername = (fullName: string): string => {
+    const trimmed = fullName.trim();
+    if (!trimmed) return "";
+    let normalized = trimmed;
+    if (trimmed.includes(",")) {
+      const [last, first] = trimmed.split(",", 2);
+      normalized = `${first || ""} ${last || ""}`.trim();
+    }
+    const slug = normalized
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, "")
+      .trim()
+      .replace(/\s+/g, ".");
+    return slug ? `${slug}@lyceum.edu.ph` : "";
+  };
   const [newStuPlan, setNewStuPlan] = useState<
     "cash" | "quarterly" | "monthly"
   >("monthly");
@@ -990,7 +1007,13 @@ export default function RegistrarDashboard({
                         required
                         placeholder="e.g. Dela Cruz, Ana Maria"
                         value={newStuName}
-                        onChange={(e) => setNewStuName(e.target.value)}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setNewStuName(val);
+                          if (!usernameManualEdit) {
+                            setNewStuEmail(generateStudentUsername(val));
+                          }
+                        }}
                       />
                     </div>
                   </div>
@@ -1117,14 +1140,40 @@ export default function RegistrarDashboard({
                   style={{ gridTemplateColumns: "1fr 1fr 1fr" }}
                 >
                   <div className="field">
-                    <label>Parent&apos;s Personal Gmail / Email</label>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        gap: "8px",
+                      }}
+                    >
+                      <label style={{ marginBottom: 0 }}>
+                        Student Username (@lyceum.edu.ph)
+                      </label>
+                      <button
+                        type="button"
+                        className="forgot-link-btn"
+                        style={{ fontSize: "0.74rem" }}
+                        onClick={() => {
+                          setUsernameManualEdit(false);
+                          setNewStuEmail(generateStudentUsername(newStuName));
+                        }}
+                      >
+                        Auto-Generate
+                      </button>
+                    </div>
                     <div className="input-wrap">
                       <input
                         type="email"
                         required
-                        placeholder="parent@email.com"
+                        placeholder="student.name@lyceum.edu.ph"
                         value={newStuEmail}
-                        onChange={(e) => setNewStuEmail(e.target.value)}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setNewStuEmail(val);
+                          setUsernameManualEdit(val.trim().length > 0);
+                        }}
                       />
                     </div>
                   </div>
