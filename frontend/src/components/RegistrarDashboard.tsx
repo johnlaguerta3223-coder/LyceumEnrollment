@@ -1907,11 +1907,6 @@ export default function RegistrarDashboard({
                     <h3>
                       Unpaid / Upcoming Exam &amp; Installment Due ({dueStudents.length})
                     </h3>
-                    <p>
-                      Only students who are not yet fully paid and have upcoming
-                      exam or installment fees are eligible. Fully Paid students
-                      are excluded. Sends live Gmail + Portal reminders.
-                    </p>
                   </div>
                 </div>
 
@@ -2079,10 +2074,6 @@ export default function RegistrarDashboard({
                   </span>
                   <div>
                     <h3>Student / Parent Payment Reminder Preview</h3>
-                    <p>
-                      Exact billing reminder sent directly to the
-                      student/parent&apos;s portal account
-                    </p>
                   </div>
                 </div>
 
