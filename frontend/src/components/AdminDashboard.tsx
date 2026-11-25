@@ -680,71 +680,36 @@ export default function AdminDashboard({
                     </h1>
                     <div
                       style={{
-                        display: "flex",
-                        flexWrap: "wrap",
+                        display: "inline-flex",
+                        alignItems: "center",
                         gap: "8px",
+                        padding: "8px 14px",
+                        borderRadius: "10px",
+                        fontSize: "0.85rem",
+                        fontWeight: 500,
+                        background:
+                          analytics.portal_pending_verification > 0
+                            ? "#fef3c7"
+                            : "#ffffff",
+                        color:
+                          analytics.portal_pending_verification > 0
+                            ? "#92400e"
+                            : "#334155",
+                        border:
+                          analytics.portal_pending_verification > 0
+                            ? "1px solid #fde68a"
+                            : "1px solid #f3d5e6",
                         marginBottom: "14px",
                       }}
                     >
-                      <span
-                        style={{
-                          padding: "5px 11px",
-                          borderRadius: "999px",
-                          fontSize: "0.8rem",
-                          fontWeight: 600,
-                          background: enrollmentOpen ? "#dcfce7" : "#fee2e2",
-                          color: enrollmentOpen ? "#166534" : "#991b1b",
-                        }}
-                      >
-                        Enrollment: {enrollmentOpen ? "Open" : "Closed"}
-                      </span>
-                      <span
-                        style={{
-                          padding: "5px 11px",
-                          borderRadius: "999px",
-                          fontSize: "0.8rem",
-                          fontWeight: 600,
-                          background: "#ffffff",
-                          color: "#1e293b",
-                          border: "1px solid #f3d5e6",
-                        }}
-                      >
-                        Officially Enrolled:{" "}
-                        <strong>{analytics.portal_officially_enrolled}</strong>
-                      </span>
-                      <span
-                        style={{
-                          padding: "5px 11px",
-                          borderRadius: "999px",
-                          fontSize: "0.8rem",
-                          fontWeight: 600,
-                          background:
-                            analytics.portal_pending_verification > 0
-                              ? "#fef3c7"
-                              : "#ffffff",
-                          color:
-                            analytics.portal_pending_verification > 0
-                              ? "#92400e"
-                              : "#475569",
-                          border: "1px solid #fde68a",
-                        }}
-                      >
-                        Pending / Not Yet Enrolled:{" "}
-                        <strong>{analytics.portal_pending_verification}</strong>
-                      </span>
-                      <span
-                        style={{
-                          padding: "5px 11px",
-                          borderRadius: "999px",
-                          fontSize: "0.8rem",
-                          fontWeight: 600,
-                          background: "#ffffff",
-                          color: "#1e293b",
-                          border: "1px solid #f3d5e6",
-                        }}
-                      >
-                        Total Registered:{" "}
-                        <strong>{analytics.portal_registered_total}</strong>
+                      <strong>Notification:</strong>{" "}
+                      <span>
+                        {analytics.portal_pending_verification > 0
+                          ? `${analytics.portal_pending_verification} student(s) pending payment & approval · `
+                          : "All registered students are verified · "}
+                        {analytics.portal_officially_enrolled} officially
+                        enrolled out of {analytics.portal_registered_total}{" "}
+                        registered account(s).
                       </span>
                     </div>
                     <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
