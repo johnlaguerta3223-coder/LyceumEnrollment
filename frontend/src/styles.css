@@ -5274,3 +5274,99 @@ button:not(:disabled):active,
   }
 }
 
+/* ==========================================================================
+   CLEAN MODERN UI POLISH (ALL PORTALS)
+   ========================================================================== */
+.lka-workspace-card,
+.portal-panel-card {
+  border-color: #efe3ea;
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.035);
+}
+
+.lka-welcome-banner {
+  border-color: #f4d8e7;
+  box-shadow: 0 8px 24px rgba(212, 55, 131, 0.06);
+}
+
+.lka-mini-stat {
+  border-color: #efe3ea;
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.03);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+.lka-mini-stat:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(212, 55, 131, 0.09);
+  border-color: #f3c4dc;
+}
+
+.lka-mini-stat.accent-pink,
+.lka-mini-stat.accent-amber {
+  box-shadow: 0 8px 20px rgba(212, 55, 131, 0.2);
+}
+
+.lka-finance-card {
+  box-shadow: 0 3px 14px rgba(15, 23, 42, 0.03);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.lka-finance-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.06);
+}
+
+.lka-nav-item {
+  transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease;
+}
+
+.lka-cta-pill-btn,
+.login-btn,
+.table-pay-btn,
+.portal-logout-btn {
+  transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease, background 0.15s ease;
+}
+
+.form-select:focus,
+.input-wrap input:focus,
+.hoa-field input:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--pink-strong);
+  box-shadow: 0 0 0 3px rgba(239, 98, 166, 0.16);
+}
+
+.table-wrap table thead th {
+  background: #fdf7fa;
+  color: #4b5563;
+  font-size: 0.76rem;
+  letter-spacing: 0.35px;
+  text-transform: uppercase;
+}
+
+.table-wrap table tbody tr {
+  transition: background 0.14s ease;
+}
+
+.table-wrap table tbody tr:hover {
+  background: #fff9fc;
+}
+
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+::-webkit-scrollbar-track {
+  background: #fdf4f8;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #e5b7cf;
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #d43783;
+}
+
+
