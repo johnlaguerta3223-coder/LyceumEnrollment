@@ -402,26 +402,41 @@ def build_email_reminder_record(
         f"Please settle your payment onsite at the School Cashier "
         f"(Mon–Fri, 8:00 AM–12:00 NN & 1:00 PM–5:00 PM) and claim your "
         f"Official Receipt (OR) at school.\n\n"
+        f"Need extra time before the periodical exam? You may submit a Digital "
+        f"Promissory Note in your Student/Parent Portal to request a 1-week grace "
+        f"period (₱0.00 late penalty) for Registrar approval.\n\n"
         f"Thank you for your continued support!\n"
         f"Lyceum ng Kabataan Academy, Inc. · Brgy. Bagong Silang, Caloocan City"
     )
 
-    delivery_status = "Payment Reminder Sent to Student Portal"
-    smtp_user = os.getenv("SMTP_USER")
-    smtp_pass = os.getenv("SMTP_PASSWORD")
+    delivery_status = "Portal Only (Set SMTP_USER/SMTP_PASSWORD for Live Gmail)"
+    smtp_user = (os.getenv("SMTP_USER") or "").strip()
+    smtp_pass = (os.getenv("SMTP_PASSWORD") or "").strip()
     if smtp_user and smtp_pass:
+        msg = EmailMessage()
+        msg["Subject"] = subject
+        msg["From"] = f"Lyceum ng Kabataan Academy Billing <{smtp_user}>"
+        msg["To"] = recipient
+        msg.set_content(body)
+        sent_ok = False
         try:
-            msg = EmailMessage()
-            msg["Subject"] = subject
-            msg["From"] = smtp_user
-            msg["To"] = recipient
-            msg.set_content(body)
-            with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=5) as server:
+            with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=12) as server:
                 server.login(smtp_user, smtp_pass)
                 server.send_message(msg)
-            delivery_status = "Delivered via SMTP Email"
+            sent_ok = True
         except Exception:
-            delivery_status = "Email Sent (Portal & Notification Log)"
+            try:
+                with smtplib.SMTP("smtp.gmail.com", 587, timeout=12) as server:
+                    server.starttls()
+                    server.login(smtp_user, smtp_pass)
+                    server.send_message(msg)
+                sent_ok = True
+            except Exception as smtp_err:
+                print(f"[SMTP ERROR] Failed sending to {recipient}: {smtp_err}")
+        if sent_ok:
+            delivery_status = "Delivered to Live Gmail & Portal"
+        else:
+            delivery_status = "Portal Saved (Gmail SMTP Failed — Check App Password)"
 
     now_str = datetime.now().strftime("%b %d, %Y · %I:%M %p")
     return PaymentReminder(
@@ -1323,6 +1338,11 @@ def registrar_send_student_payment_reminder(
         raise HTTPException(status_code=404, detail="Student record not found.")
 
     billing = compute_student_billing(student)
+    if (student.enrollment_status or "") != "Officially Enrolled":
+        raise HTTPException(
+            status_code=400,
+            detail=f"{student.student_name} is not Officially Enrolled yet.",
+        )
     if billing["remaining_balance"] <= 0:
         raise HTTPException(
             status_code=400,
@@ -1332,7 +1352,7 @@ def registrar_send_student_payment_reminder(
     db.add(rem)
     db.commit()
     return {
-        "message": f"Payment reminder sent to {student.student_name}'s Student/Parent Portal!"
+        "message": f"Payment reminder for {student.student_name} ({rem.recipient_email}): {rem.delivery_status}!"
     }
 
 

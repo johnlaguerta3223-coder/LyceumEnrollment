@@ -1077,7 +1077,7 @@ export default function RegistrarDashboard({
                   style={{ gridTemplateColumns: "1fr 1fr 1fr" }}
                 >
                   <div className="field">
-                    <label>Portal Email Address</label>
+                    <label>Parent&apos;s Personal Gmail / Email</label>
                     <div className="input-wrap">
                       <input
                         type="email"
@@ -1856,11 +1856,12 @@ export default function RegistrarDashboard({
                   </span>
                   <div>
                     <h3>
-                      Students with Upcoming Installments ({dueStudents.length})
+                      Unpaid / Upcoming Exam &amp; Installment Due ({dueStudents.length})
                     </h3>
                     <p>
-                      Send automated portal payment reminders before monthly due
-                      dates (15th–30th) and quarterly exams (Aug, Oct, Jan, Mar)
+                      Only students who are not yet fully paid and have upcoming
+                      exam or installment fees are eligible. Fully Paid students
+                      are excluded. Sends live Gmail + Portal reminders.
                     </p>
                   </div>
                 </div>
@@ -1872,8 +1873,8 @@ export default function RegistrarDashboard({
                     onClick={handleSendBulkReminders}
                     disabled={processingAction || dueStudents.length === 0}
                   >
-                    <IconMail size={16} /> Send Payment Reminders to All{" "}
-                    {dueStudents.length} Student Account(s) →
+                    <IconMail size={16} /> Send Live Gmail &amp; Portal Reminders
+                    to All {dueStudents.length} Eligible Student(s) →
                   </button>
                 </div>
 
@@ -1942,7 +1943,7 @@ export default function RegistrarDashboard({
                               onClick={() => handleSendSingleReminder(stu)}
                               disabled={processingAction}
                             >
-                              Send Payment Reminder
+                              Send Live Gmail &amp; Portal Reminder
                             </button>
                           </div>
                         </div>

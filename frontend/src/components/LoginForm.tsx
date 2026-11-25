@@ -1317,7 +1317,7 @@ export default function LoginForm({
 
                     <div className="field">
                       <label htmlFor="reg-email">
-                        Parent / Student Portal Email Address
+                        Parent&apos;s Personal Gmail / Email (For Live Payment Reminders)
                       </label>
                       <div className="input-wrap with-icon">
                         <span className="input-icon">
