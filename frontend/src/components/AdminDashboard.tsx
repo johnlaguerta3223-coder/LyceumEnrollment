@@ -675,12 +675,9 @@ export default function AdminDashboard({
                   <div>
                     <div className="lka-welcome-date">{dateStr}</div>
                     <div className="lka-welcome-time">{timeStr}</div>
-                    <h1>Hello {adminDisplayName}!</h1>
-                    <p>
-                      Monitor {analytics.school_population_total} learners across
-                      27 sections, review tuition collections, and manage staff
-                      and student accounts for S.Y. 2026–2027.
-                    </p>
+                    <h1 style={{ marginBottom: "14px" }}>
+                      Hello {adminDisplayName}!
+                    </h1>
                     <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
                       <button
                         type="button"
