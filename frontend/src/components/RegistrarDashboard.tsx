@@ -293,6 +293,7 @@ export default function RegistrarDashboard({
   const [newStuParent, setNewStuParent] = useState<string>("");
   const [newStuPhone, setNewStuPhone] = useState<string>("");
   const [newStuEmail, setNewStuEmail] = useState<string>("");
+  const [newStuContactEmail, setNewStuContactEmail] = useState<string>("");
   const [usernameManualEdit, setUsernameManualEdit] = useState<boolean>(false);
   const [newStuPassword, setNewStuPassword] = useState<string>("");
 
@@ -693,6 +694,7 @@ export default function RegistrarDashboard({
           parent_name: newStuParent,
           phone: newStuPhone,
           email: newStuEmail,
+          contact_email: newStuContactEmail,
           password: newStuPassword,
           payment_plan: newStuPlan,
           payment_method: newStuMethod,
@@ -705,6 +707,8 @@ export default function RegistrarDashboard({
       setNewStuParent("");
       setNewStuPhone("");
       setNewStuEmail("");
+      setNewStuContactEmail("");
+      setUsernameManualEdit(false);
       setNewStuPassword("");
       setShowCreateStudent(false);
       await fetchStudents();
@@ -1174,6 +1178,21 @@ export default function RegistrarDashboard({
                           setNewStuEmail(val);
                           setUsernameManualEdit(val.trim().length > 0);
                         }}
+                      />
+                    </div>
+                  </div>
+                  <div className="field">
+                    <label>
+                      Parent&apos;s Personal Gmail (Receives Account &amp;
+                      Reminders)
+                    </label>
+                    <div className="input-wrap">
+                      <input
+                        type="email"
+                        required
+                        placeholder="e.g. juandelacruz@gmail.com"
+                        value={newStuContactEmail}
+                        onChange={(e) => setNewStuContactEmail(e.target.value)}
                       />
                     </div>
                   </div>

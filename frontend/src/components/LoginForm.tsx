@@ -370,9 +370,10 @@ export default function LoginForm({
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showRegPassword, setShowRegPassword] = useState(false);
 
-  // Forgot Password state
+  // Forgot Password state (2-step email verification code)
   const [fpEmail, setFpEmail] = useState("");
-  const [fpPhone, setFpPhone] = useState("");
+  const [fpCode, setFpCode] = useState("");
+  const [fpCodeSent, setFpCodeSent] = useState(false);
   const [fpNewPassword, setFpNewPassword] = useState("");
   const [fpConfirmPassword, setFpConfirmPassword] = useState("");
   const [showFpPassword, setShowFpPassword] = useState(false);
@@ -583,6 +584,36 @@ export default function LoginForm({
     }
   };
 
+  const handleSendResetCode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setStatus(null);
+    setLoading(true);
+    try {
+      const res = await axios.post(
+        `${API_BASE}/api/auth/forgot-password/request`,
+        { email: fpEmail }
+      );
+      setFpCodeSent(true);
+      setStatus({
+        type: "success",
+        text:
+          res.data?.message ||
+          "A 6-digit reset code has been sent to your registered Gmail!",
+      });
+    } catch (err: any) {
+      const detail = err.response?.data?.detail;
+      setStatus({
+        type: "error",
+        text:
+          typeof detail === "string"
+            ? detail
+            : "Could not find an account with that email address.",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleForgotSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setStatus(null);
@@ -606,16 +637,18 @@ export default function LoginForm({
     setLoading(true);
     try {
       const res = await axios.post(
-        `${API_BASE}/api/auth/forgot-password`,
+        `${API_BASE}/api/auth/forgot-password/confirm`,
         {
           email: fpEmail,
-          phone: fpPhone,
+          code: fpCode,
           new_password: fpNewPassword,
         }
       );
 
-      setEmail(fpEmail);
+      setEmail(res.data?.username || fpEmail);
       setPassword("");
+      setFpCode("");
+      setFpCodeSent(false);
       setView("login");
       setStatus({
         type: "success",
@@ -630,7 +663,7 @@ export default function LoginForm({
         text:
           typeof detail === "string"
             ? detail
-            : "Could not reset password. Please check your email and mobile number.",
+            : "Invalid code or could not reset password.",
       });
     } finally {
       setLoading(false);
@@ -1587,96 +1620,126 @@ export default function LoginForm({
                 <span className="auth-step-tag">Account Recovery</span>
                 <h2>Reset Your Password</h2>
                 <p className="subtitle">
-                  Verify your registered email and mobile number to create a new
-                  password.
+                  {fpCodeSent
+                    ? "Enter the 6-digit verification code sent to your Gmail and set your new password."
+                    : "Enter your registered email / username to receive a 6-digit password reset code in your Gmail."}
                 </p>
               </div>
 
-              <form onSubmit={handleForgotSubmit}>
-                <div className="field">
-                  <label htmlFor="fp-email">Registered Email Address</label>
-                  <div className="input-wrap with-icon">
-                    <span className="input-icon">
-                      <IconMail size={17} />
-                    </span>
-                    <input
-                      id="fp-email"
-                      type="email"
-                      required
-                      placeholder="example@email.com"
-                      value={fpEmail}
-                      onChange={(e) => setFpEmail(e.target.value)}
-                    />
-                  </div>
-                </div>
-
-                <div className="field">
-                  <label htmlFor="fp-phone">Registered Mobile Number</label>
-                  <div className="input-wrap with-icon">
-                    <span className="input-icon">
-                      <IconPhone size={17} />
-                    </span>
-                    <input
-                      id="fp-phone"
-                      type="tel"
-                      required
-                      placeholder="09171234567"
-                      value={fpPhone}
-                      onChange={(e) => setFpPhone(e.target.value)}
-                    />
-                  </div>
-                </div>
-
-                <div className="form-two-col">
+              {!fpCodeSent ? (
+                <form onSubmit={handleSendResetCode}>
                   <div className="field">
-                    <label htmlFor="fp-new-password">New Password</label>
+                    <label htmlFor="fp-email">
+                      Registered Email / Username
+                    </label>
                     <div className="input-wrap with-icon">
                       <span className="input-icon">
-                        <IconKey size={17} />
+                        <IconMail size={17} />
                       </span>
                       <input
-                        id="fp-new-password"
-                        className="has-toggle"
-                        type={showFpPassword ? "text" : "password"}
+                        id="fp-email"
+                        type="text"
                         required
-                        placeholder="Min. 6 characters"
-                        value={fpNewPassword}
-                        onChange={(e) => setFpNewPassword(e.target.value)}
+                        placeholder="example@gmail.com or student@lyceum.edu.ph"
+                        value={fpEmail}
+                        onChange={(e) => setFpEmail(e.target.value)}
                       />
-                      <button
-                        type="button"
-                        className="toggle-btn"
-                        onClick={() => setShowFpPassword(!showFpPassword)}
-                      >
-                        {showFpPassword ? "Hide" : "Show"}
-                      </button>
                     </div>
                   </div>
 
+                  <button type="submit" className="login-btn" disabled={loading}>
+                    {loading
+                      ? "Sending Reset Code..."
+                      : "Send Reset Code to Gmail →"}
+                  </button>
+                </form>
+              ) : (
+                <form onSubmit={handleForgotSubmit}>
                   <div className="field">
-                    <label htmlFor="fp-confirm-password">
-                      Confirm New Password
+                    <label htmlFor="fp-code">
+                      6-Digit Verification Code (Check Gmail)
                     </label>
                     <div className="input-wrap with-icon">
                       <span className="input-icon">
                         <IconKey size={17} />
                       </span>
                       <input
-                        id="fp-confirm-password"
-                        type={showFpPassword ? "text" : "password"}
+                        id="fp-code"
+                        type="text"
                         required
-                        placeholder="Repeat password"
-                        value={fpConfirmPassword}
-                        onChange={(e) => setFpConfirmPassword(e.target.value)}
+                        maxLength={6}
+                        placeholder="e.g. 123456"
+                        value={fpCode}
+                        onChange={(e) => setFpCode(e.target.value)}
                       />
                     </div>
                   </div>
-                </div>
 
-                <button type="submit" className="login-btn" disabled={loading}>
-                  {loading ? "Resetting Password..." : "Save New Password →"}
-                </button>
-              </form>
+                  <div className="form-two-col">
+                    <div className="field">
+                      <label htmlFor="fp-new-password">New Password</label>
+                      <div className="input-wrap with-icon">
+                        <span className="input-icon">
+                          <IconKey size={17} />
+                        </span>
+                        <input
+                          id="fp-new-password"
+                          className="has-toggle"
+                          type={showFpPassword ? "text" : "password"}
+                          required
+                          placeholder="Min. 6 characters"
+                          value={fpNewPassword}
+                          onChange={(e) => setFpNewPassword(e.target.value)}
+                        />
+                        <button
+                          type="button"
+                          className="toggle-btn"
+                          onClick={() => setShowFpPassword(!showFpPassword)}
+                        >
+                          {showFpPassword ? "Hide" : "Show"}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="field">
+                      <label htmlFor="fp-confirm-password">
+                        Confirm New Password
+                      </label>
+                      <div className="input-wrap with-icon">
+                        <span className="input-icon">
+                          <IconKey size={17} />
+                        </span>
+                        <input
+                          id="fp-confirm-password"
+                          type={showFpPassword ? "text" : "password"}
+                          required
+                          placeholder="Repeat password"
+                          value={fpConfirmPassword}
+                          onChange={(e) => setFpConfirmPassword(e.target.value)}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <button type="submit" className="login-btn" disabled={loading}>
+                    {loading
+                      ? "Resetting Password..."
+                      : "Verify Code & Save New Password →"}
+                  </button>
+
+                  <button
+                    type="button"
+                    className="step-back-btn"
+                    style={{ marginTop: "8px", width: "100%" }}
+                    onClick={() => {
+                      setFpCodeSent(false);
+                      setStatus(null);
+                    }}
+                  >
+                    Use a Different Email / Resend Code
+                  </button>
+                </form>
+              )}
 
               {status && (
                 <div className={`alert ${status.type}`}>{status.text}</div>

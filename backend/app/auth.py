@@ -49,6 +49,7 @@ class RegisterRequest(BaseModel):
     payment_method: Optional[str] = "cash"
     requirements_submitted: Optional[List[str]] = None
     email: str
+    contact_email: Optional[str] = None
     phone: str
     password: str
 
@@ -56,6 +57,16 @@ class RegisterRequest(BaseModel):
 class ForgotPasswordRequest(BaseModel):
     email: str
     phone: str
+    new_password: str
+
+
+class ForgotPasswordEmailRequest(BaseModel):
+    email: str
+
+
+class ForgotPasswordConfirmRequest(BaseModel):
+    email: str
+    code: str
     new_password: str
 
 
@@ -133,6 +144,7 @@ class RegistrarCreateStudentRequest(BaseModel):
     payment_plan: str = "monthly"  # 'cash', 'quarterly', 'monthly'
     payment_method: str = "cash"  # 'gcash', 'cash', 'online_banking'
     email: str
+    contact_email: Optional[str] = None
     phone: str
     password: str
 
@@ -374,6 +386,181 @@ def compute_student_billing(user: Parent) -> Dict[str, Any]:
     }
 
 
+def send_transactional_email(
+    recipient: str,
+    to_name: str,
+    subject: str,
+    text_body: str,
+    html_body: str,
+) -> tuple[bool, str]:
+    brevo_key = (os.getenv("BREVO_API_KEY") or "").strip()
+    resend_key = (os.getenv("RESEND_API_KEY") or "").strip()
+    smtp_user = (os.getenv("SMTP_USER") or "").strip()
+    smtp_pass = (os.getenv("SMTP_PASSWORD") or "").replace(" ", "").strip()
+    sender_email = (os.getenv("BREVO_SENDER_EMAIL") or smtp_user).strip()
+
+    sent_ok = False
+    if brevo_key and sender_email:
+        try:
+            payload_bytes = json.dumps(
+                {
+                    "sender": {
+                        "name": "Lyceum ng Kabataan Academy",
+                        "email": sender_email,
+                    },
+                    "to": [{"email": recipient, "name": to_name}],
+                    "subject": subject,
+                    "textContent": text_body,
+                    "htmlContent": html_body,
+                }
+            ).encode("utf-8")
+            req = urllib.request.Request(
+                "https://api.brevo.com/v3/smtp/email",
+                data=payload_bytes,
+                headers={
+                    "api-key": brevo_key,
+                    "Content-Type": "application/json",
+                    "Accept": "application/json",
+                },
+                method="POST",
+            )
+            with urllib.request.urlopen(req, timeout=12) as resp:
+                if 200 <= resp.status < 300:
+                    sent_ok = True
+        except Exception as brevo_err:
+            print(f"[BREVO ERROR] Failed sending to {recipient}: {brevo_err}")
+
+    if not sent_ok and resend_key:
+        try:
+            payload_bytes = json.dumps(
+                {
+                    "from": "Lyceum ng Kabataan Academy <onboarding@resend.dev>",
+                    "to": [recipient],
+                    "subject": subject,
+                    "text": text_body,
+                    "html": html_body,
+                }
+            ).encode("utf-8")
+            req = urllib.request.Request(
+                "https://api.resend.com/emails",
+                data=payload_bytes,
+                headers={
+                    "Authorization": f"Bearer {resend_key}",
+                    "Content-Type": "application/json",
+                },
+                method="POST",
+            )
+            with urllib.request.urlopen(req, timeout=12) as resp:
+                if 200 <= resp.status < 300:
+                    sent_ok = True
+        except Exception as resend_err:
+            print(f"[RESEND ERROR] Failed sending to {recipient}: {resend_err}")
+
+    if not sent_ok and smtp_user and smtp_pass:
+        msg = EmailMessage()
+        msg["Subject"] = subject
+        msg["From"] = f"Lyceum ng Kabataan Academy <{smtp_user}>"
+        msg["To"] = recipient
+        msg.set_content(text_body)
+        msg.add_alternative(html_body, subtype="html")
+        try:
+            with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=10) as server:
+                server.login(smtp_user, smtp_pass)
+                server.send_message(msg)
+            sent_ok = True
+        except Exception:
+            try:
+                with smtplib.SMTP("smtp.gmail.com", 587, timeout=10) as server:
+                    server.starttls()
+                    server.login(smtp_user, smtp_pass)
+                    server.send_message(msg)
+                sent_ok = True
+            except Exception as smtp_err:
+                print(f"[SMTP ERROR] Failed sending to {recipient}: {smtp_err}")
+
+    if sent_ok:
+        return True, "Successfully Sent to Email & Portal"
+    if brevo_key or resend_key or (smtp_user and smtp_pass):
+        return False, "Portal Saved (Email Provider Error — Check Key)"
+    return False, "Portal Saved (Set BREVO_API_KEY for Live Email)"
+
+
+def build_lyceum_email_html(subtitle: str, inner_html: str) -> str:
+    logo_url = "https://lyceum-enrollment.vercel.app/logo.jpg"
+    return f"""<!DOCTYPE html>
+<html>
+<body style="margin:0;padding:0;background:#fdf4f8;font-family:'Segoe UI',Arial,sans-serif;color:#1e293b;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="padding:24px 12px;">
+    <tr>
+      <td align="center">
+        <table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border:1px solid #f3d5e6;border-radius:16px;overflow:hidden;">
+          <tr>
+            <td align="center" style="background:linear-gradient(135deg,#ec4899 0%,#db2777 100%);padding:24px 20px;color:#ffffff;">
+              <img src="{logo_url}" alt="Lyceum ng Kabataan Academy Logo" width="68" height="68" style="border-radius:50%;border:3px solid #ffffff;background:#ffffff;display:block;margin:0 auto 10px;" />
+              <div style="font-size:17px;font-weight:700;letter-spacing:0.2px;">Lyceum ng Kabataan Academy, Inc.</div>
+              <div style="font-size:12px;opacity:0.92;margin-top:2px;">{subtitle}</div>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:24px 22px;font-size:14px;line-height:1.6;">
+              {inner_html}
+            </td>
+          </tr>
+          <tr>
+            <td align="center" style="background:#fdf8fb;border-top:1px solid #f3e8ef;padding:14px 18px;font-size:11.5px;color:#64748b;">
+              Lyceum ng Kabataan Academy, Inc. &middot; Brgy. Bagong Silang, Caloocan City
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>"""
+
+
+def send_account_welcome_email(user: Parent, raw_password: str) -> bool:
+    recipient = (user.contact_email or user.email or "").strip()
+    if not recipient or "@" not in recipient:
+        return False
+    guardian_name = user.parent_guardian_name or "Parent / Guardian"
+    student_name = user.student_name or user.name
+    portal_url = "https://lyceum-enrollment.vercel.app"
+    subject = f"[LKA Student Portal] Account Created for {student_name}"
+    text_body = (
+        f"Dear {guardian_name},\n\n"
+        f"Your Student & Parent Portal account at Lyceum ng Kabataan Academy, Inc. has been created.\n\n"
+        f"• Student Name: {student_name}\n"
+        f"• Student ID: {user.student_id_no}\n"
+        f"• Grade & Section: {user.grade_level} · {user.assigned_section}\n"
+        f"• Class Shift: {(user.class_shift or 'morning').capitalize()}\n"
+        f"• Payment Plan: {(user.payment_plan or 'monthly').capitalize()}\n"
+        f"• Portal Username: {user.email}\n"
+        f"• Password: {raw_password}\n\n"
+        f"Note: Please settle your initial payment onsite at the School Cashier and wait for Registrar verification before logging in.\n"
+        f"Portal Link: {portal_url}\n"
+    )
+    inner_html = f"""
+      <p style="margin:0 0 12px;">Dear <strong>{guardian_name}</strong>,</p>
+      <p style="margin:0 0 16px;">Welcome to <strong>Lyceum ng Kabataan Academy, Inc.</strong>! Below are the account credentials and enrollment details for your child:</p>
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:#fdf8fb;border:1px solid #f3d5e6;border-radius:12px;padding:14px 16px;margin-bottom:16px;">
+        <tr><td style="padding:4px 0;color:#64748b;font-size:13px;">Student Name:</td><td align="right" style="padding:4px 0;font-weight:700;color:#0f172a;font-size:13px;">{student_name}</td></tr>
+        <tr><td style="padding:4px 0;color:#64748b;font-size:13px;">Student ID:</td><td align="right" style="padding:4px 0;font-weight:700;color:#0f172a;font-size:13px;">{user.student_id_no}</td></tr>
+        <tr><td style="padding:4px 0;color:#64748b;font-size:13px;">Grade &amp; Section:</td><td align="right" style="padding:4px 0;font-weight:600;color:#0f172a;font-size:13px;">{user.grade_level} &middot; {user.assigned_section}</td></tr>
+        <tr><td style="padding:4px 0;color:#64748b;font-size:13px;">Payment Plan:</td><td align="right" style="padding:4px 0;font-weight:600;color:#0f172a;font-size:13px;text-transform:capitalize;">{user.payment_plan or 'monthly'}</td></tr>
+        <tr><td style="padding:6px 0 4px;color:#64748b;font-size:13px;border-top:1px solid #f3e8ef;">Login Username:</td><td align="right" style="padding:6px 0 4px;font-weight:800;color:#db2777;font-size:13px;border-top:1px solid #f3e8ef;">{user.email}</td></tr>
+        <tr><td style="padding:4px 0;color:#64748b;font-size:13px;">Password:</td><td align="right" style="padding:4px 0;font-weight:800;color:#0f172a;font-size:13px;">{raw_password}</td></tr>
+      </table>
+      <p style="margin:0 0 16px;padding:10px 12px;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;font-size:13px;color:#92400e;"><strong>Next Step:</strong> Please settle your payment onsite at the School Cashier and wait for Registrar approval before logging into the Student Portal.</p>
+      <div style="text-align:center;margin:16px 0 6px;">
+        <a href="{portal_url}" style="display:inline-block;background:#db2777;color:#ffffff;text-decoration:none;font-weight:700;font-size:13px;padding:11px 22px;border-radius:999px;">Open Student &amp; Parent Portal &rarr;</a>
+      </div>
+    """
+    html_body = build_lyceum_email_html("Student &amp; Parent Portal Account Details", inner_html)
+    ok, _ = send_transactional_email(recipient, guardian_name, subject, text_body, html_body)
+    return ok
+
+
 def build_email_reminder_record(
     user: Parent, billing: Dict[str, Any], recipient_override: Optional[str] = None
 ) -> PaymentReminder:
@@ -381,7 +568,7 @@ def build_email_reminder_record(
         (s for s in billing["schedule"] if s["status"] != "Paid"),
         billing["schedule"][0],
     )
-    recipient = (recipient_override or user.email).strip()
+    recipient = (recipient_override or user.contact_email or user.email).strip()
     guardian_name = user.parent_guardian_name or "Parent / Guardian"
     student_name = user.student_name or user.name
     grade_lvl = user.grade_level or "Grade 1"
@@ -455,94 +642,9 @@ def build_email_reminder_record(
 </body>
 </html>"""
 
-    delivery_status = "Portal Saved (Set BREVO_API_KEY for Live Email on Render)"
-    brevo_key = (os.getenv("BREVO_API_KEY") or "").strip()
-    resend_key = (os.getenv("RESEND_API_KEY") or "").strip()
-    smtp_user = (os.getenv("SMTP_USER") or "").strip()
-    smtp_pass = (os.getenv("SMTP_PASSWORD") or "").replace(" ", "").strip()
-    sender_email = (os.getenv("BREVO_SENDER_EMAIL") or smtp_user).strip()
-
-    sent_ok = False
-    if brevo_key and sender_email:
-        try:
-            payload_bytes = json.dumps(
-                {
-                    "sender": {
-                        "name": "Lyceum ng Kabataan Academy Billing",
-                        "email": sender_email,
-                    },
-                    "to": [{"email": recipient, "name": guardian_name}],
-                    "subject": subject,
-                    "textContent": body,
-                    "htmlContent": html_body,
-                }
-            ).encode("utf-8")
-            req = urllib.request.Request(
-                "https://api.brevo.com/v3/smtp/email",
-                data=payload_bytes,
-                headers={
-                    "api-key": brevo_key,
-                    "Content-Type": "application/json",
-                    "Accept": "application/json",
-                },
-                method="POST",
-            )
-            with urllib.request.urlopen(req, timeout=12) as resp:
-                if 200 <= resp.status < 300:
-                    sent_ok = True
-        except Exception as brevo_err:
-            print(f"[BREVO ERROR] Failed sending to {recipient}: {brevo_err}")
-
-    if not sent_ok and resend_key:
-        try:
-            payload_bytes = json.dumps(
-                {
-                    "from": "Lyceum Billing <onboarding@resend.dev>",
-                    "to": [recipient],
-                    "subject": subject,
-                    "text": body,
-                }
-            ).encode("utf-8")
-            req = urllib.request.Request(
-                "https://api.resend.com/emails",
-                data=payload_bytes,
-                headers={
-                    "Authorization": f"Bearer {resend_key}",
-                    "Content-Type": "application/json",
-                },
-                method="POST",
-            )
-            with urllib.request.urlopen(req, timeout=12) as resp:
-                if 200 <= resp.status < 300:
-                    sent_ok = True
-        except Exception as resend_err:
-            print(f"[RESEND ERROR] Failed sending to {recipient}: {resend_err}")
-
-    if not sent_ok and smtp_user and smtp_pass:
-        msg = EmailMessage()
-        msg["Subject"] = subject
-        msg["From"] = f"Lyceum ng Kabataan Academy Billing <{smtp_user}>"
-        msg["To"] = recipient
-        msg.set_content(body)
-        try:
-            with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=10) as server:
-                server.login(smtp_user, smtp_pass)
-                server.send_message(msg)
-            sent_ok = True
-        except Exception:
-            try:
-                with smtplib.SMTP("smtp.gmail.com", 587, timeout=10) as server:
-                    server.starttls()
-                    server.login(smtp_user, smtp_pass)
-                    server.send_message(msg)
-                sent_ok = True
-            except Exception as smtp_err:
-                print(f"[SMTP ERROR] Failed sending to {recipient}: {smtp_err}")
-
-    if sent_ok:
-        delivery_status = "Successfully Sent to Email & Portal"
-    elif brevo_key or resend_key or (smtp_user and smtp_pass):
-        delivery_status = "Portal Saved (Email Provider Error — Check Key)"
+    _, delivery_status = send_transactional_email(
+        recipient, guardian_name, subject, body, html_body
+    )
 
     now_str = datetime.now().strftime("%b %d, %Y · %I:%M %p")
     return PaymentReminder(
@@ -607,6 +709,7 @@ def register(payload: RegisterRequest, db: Session = Depends(get_db)):
     new_parent = Parent(
         name=display_name,
         email=email_clean,
+        contact_email=(payload.contact_email or "").strip().lower() or email_clean,
         phone=phone_clean,
         hashed_password=get_password_hash(payload.password),
         plain_password=payload.password,
@@ -636,6 +739,7 @@ def register(payload: RegisterRequest, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(new_parent)
 
+    send_account_welcome_email(new_parent, payload.password)
     billing = compute_student_billing(new_parent)
 
     return {
@@ -671,7 +775,10 @@ def forgot_username(payload: ForgotUsernameRequest, db: Session = Depends(get_db
 
     matched = (
         db.query(Parent)
-        .filter(Parent.email == email_clean, Parent.phone == phone_clean)
+        .filter(
+            (Parent.email == email_clean) | (Parent.contact_email == email_clean),
+            Parent.phone == phone_clean,
+        )
         .first()
     )
 
@@ -686,6 +793,99 @@ def forgot_username(payload: ForgotUsernameRequest, db: Session = Depends(get_db
         "student_name": matched.student_name or matched.name,
         "student_id_no": matched.student_id_no or "Staff / Admin",
         "enrollment_status": matched.enrollment_status or "Active",
+    }
+
+
+@router.post("/forgot-password/request")
+def request_forgot_password_code(
+    payload: ForgotPasswordEmailRequest, db: Session = Depends(get_db)
+):
+    email_clean = payload.email.strip().lower()
+    if not email_clean:
+        raise HTTPException(
+            status_code=400, detail="Please enter your registered email address."
+        )
+
+    user = (
+        db.query(Parent)
+        .filter((Parent.email == email_clean) | (Parent.contact_email == email_clean))
+        .first()
+    )
+    if not user:
+        raise HTTPException(
+            status_code=404,
+            detail="No account found with that email address.",
+        )
+
+    target_email = (user.contact_email or user.email).strip()
+    reset_code = f"{random.randint(100000, 999999)}"
+    user.verification_token = reset_code
+    db.commit()
+
+    recipient_name = user.parent_guardian_name or user.student_name or user.name
+    subject = "[LKA Portal] Password Reset Verification Code"
+    text_body = (
+        f"Dear {recipient_name},\n\n"
+        f"You requested a password reset for your Lyceum ng Kabataan Academy Portal account.\n"
+        f"• Username: {user.email}\n"
+        f"• Verification Code: {reset_code}\n\n"
+        f"Enter this 6-digit code in the Forgot Password screen to set your new password.\n"
+    )
+    inner_html = f"""
+      <p style="margin:0 0 12px;">Dear <strong>{recipient_name}</strong>,</p>
+      <p style="margin:0 0 16px;">We received a request to reset the password for your Student/Parent Portal account (<strong>{user.email}</strong>).</p>
+      <div style="text-align:center;background:#fdf8fb;border:1px solid #f3d5e6;border-radius:12px;padding:18px;margin-bottom:16px;">
+        <div style="font-size:12px;color:#64748b;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:6px;">Your 6-Digit Reset Code</div>
+        <div style="font-size:28px;font-weight:800;letter-spacing:6px;color:#db2777;">{reset_code}</div>
+      </div>
+      <p style="margin:0;font-size:13px;color:#64748b;">Enter this verification code on the Forgot Password page to create your new password.</p>
+    """
+    html_body = build_lyceum_email_html("Password Reset Request", inner_html)
+    ok, status_msg = send_transactional_email(
+        target_email, recipient_name, subject, text_body, html_body
+    )
+    if not ok:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Could not send reset email ({status_msg}). Please contact the Registrar.",
+        )
+
+    return {
+        "message": f"A 6-digit password reset code has been sent to {target_email}!",
+        "sent_to": target_email,
+    }
+
+
+@router.post("/forgot-password/confirm")
+def confirm_forgot_password_code(
+    payload: ForgotPasswordConfirmRequest, db: Session = Depends(get_db)
+):
+    email_clean = payload.email.strip().lower()
+    code_clean = payload.code.strip()
+
+    user = (
+        db.query(Parent)
+        .filter((Parent.email == email_clean) | (Parent.contact_email == email_clean))
+        .first()
+    )
+    if not user or not user.verification_token or user.verification_token != code_clean:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid verification code. Please check the 6-digit code sent to your email.",
+        )
+    if len(payload.new_password) < 6:
+        raise HTTPException(
+            status_code=400,
+            detail="New password must be at least 6 characters long.",
+        )
+
+    user.hashed_password = get_password_hash(payload.new_password)
+    user.plain_password = payload.new_password
+    user.verification_token = None
+    db.commit()
+    return {
+        "username": user.email,
+        "message": "Password has been reset! You can now log in with your new password.",
     }
 
 
@@ -1252,6 +1452,7 @@ def registrar_create_student_account(
     new_student = Parent(
         name=payload.student_name.strip(),
         email=email_clean,
+        contact_email=(payload.contact_email or "").strip().lower() or None,
         phone=phone_clean,
         hashed_password=get_password_hash(payload.password),
         plain_password=payload.password,
@@ -1282,8 +1483,15 @@ def registrar_create_student_account(
     db.commit()
     db.refresh(new_student)
 
+    email_sent = send_account_welcome_email(new_student, payload.password)
+    email_note = (
+        f" Account details emailed to {new_student.contact_email}."
+        if email_sent and new_student.contact_email
+        else ""
+    )
+
     return {
-        "message": f"Student Account created for {new_student.student_name} ({student_id_no} · {assigned_sec})! You can now verify their requirements and record their payment in Pending Registrations.",
+        "message": f"Student Account created for {new_student.student_name} ({student_id_no} · {assigned_sec})!{email_note}",
         "student_id_no": student_id_no,
         "assigned_section": assigned_sec,
     }

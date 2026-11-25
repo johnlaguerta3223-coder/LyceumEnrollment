@@ -56,6 +56,7 @@ def create_tables_and_seed_users():
         ("requirements_submitted", "TEXT"),
         ("enrollment_status", "VARCHAR DEFAULT 'Pending Downpayment'"),
         ("plain_password", "VARCHAR"),
+        ("contact_email", "VARCHAR"),
     ]
 
     if engine.dialect.name == "sqlite":
@@ -82,6 +83,9 @@ def create_tables_and_seed_users():
         with engine.connect() as conn:
             conn.execute(
                 text("ALTER TABLE parents ADD COLUMN IF NOT EXISTS plain_password VARCHAR")
+            )
+            conn.execute(
+                text("ALTER TABLE parents ADD COLUMN IF NOT EXISTS contact_email VARCHAR")
             )
             conn.commit()
     Base.metadata.create_all(bind=engine)
