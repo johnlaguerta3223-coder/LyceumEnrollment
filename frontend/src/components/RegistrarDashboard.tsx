@@ -270,6 +270,9 @@ export default function RegistrarDashboard({
   // Tab 3: Email Reminder Preview State
   const [previewReminder, setPreviewReminder] =
     useState<PaymentReminderItem | null>(null);
+  const [reminderGradeFilter, setReminderGradeFilter] =
+    useState<string>("All Grades");
+  const [reminderSearch, setReminderSearch] = useState<string>("");
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(() =>
     typeof window !== "undefined" ? window.innerWidth > 920 : true
   );
@@ -371,6 +374,22 @@ export default function RegistrarDashboard({
   const dueStudents = enrolledStudents.filter(
     (s) => s.billing.remaining_balance > 0
   );
+  const filteredDueStudents = dueStudents.filter((s) => {
+    if (
+      reminderGradeFilter !== "All Grades" &&
+      s.grade_level !== reminderGradeFilter
+    ) {
+      return false;
+    }
+    const q = reminderSearch.trim().toLowerCase();
+    if (!q) return true;
+    return (
+      s.student_name.toLowerCase().includes(q) ||
+      s.student_id_no.toLowerCase().includes(q) ||
+      s.parent_guardian_name.toLowerCase().includes(q) ||
+      s.email.toLowerCase().includes(q)
+    );
+  });
 
   // Filtered Enrolled Masterlist (Tab 1)
   const filteredMasterlist = enrolledStudents.filter((s) => {
@@ -1896,7 +1915,7 @@ export default function RegistrarDashboard({
                   </div>
                 </div>
 
-                <div style={{ marginBottom: "16px" }}>
+                <div style={{ marginBottom: "14px" }}>
                   <button
                     type="button"
                     className="login-btn"
@@ -1908,8 +1927,76 @@ export default function RegistrarDashboard({
                   </button>
                 </div>
 
+                {/* Grade Level Filter Tabs + Search Bar */}
+                <div
+                  style={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: "6px",
+                    marginBottom: "10px",
+                  }}
+                >
+                  {[
+                    "All Grades",
+                    "Kinder 1",
+                    "Kinder 2",
+                    "Grade 1",
+                    "Grade 2",
+                    "Grade 3",
+                    "Grade 4",
+                    "Grade 5",
+                    "Grade 6",
+                  ].map((g) => {
+                    const count =
+                      g === "All Grades"
+                        ? dueStudents.length
+                        : dueStudents.filter((s) => s.grade_level === g).length;
+                    const active = reminderGradeFilter === g;
+                    return (
+                      <button
+                        key={g}
+                        type="button"
+                        onClick={() => setReminderGradeFilter(g)}
+                        style={{
+                          padding: "5px 10px",
+                          borderRadius: "999px",
+                          fontSize: "0.75rem",
+                          fontWeight: 600,
+                          cursor: "pointer",
+                          border: active
+                            ? "1px solid #db2777"
+                            : "1px solid #e5e7eb",
+                          background: active ? "#db2777" : "#ffffff",
+                          color: active ? "#ffffff" : "#374151",
+                        }}
+                      >
+                        {g === "All Grades" ? "All" : g} ({count})
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div className="input-wrap" style={{ marginBottom: "14px" }}>
+                  <input
+                    type="text"
+                    placeholder="Search student name, ID, guardian, or email..."
+                    value={reminderSearch}
+                    onChange={(e) => setReminderSearch(e.target.value)}
+                  />
+                </div>
+
                 <div className="promissory-list">
-                  {dueStudents.map((stu) => {
+                  {filteredDueStudents.length === 0 ? (
+                    <p className="empty-table-note">
+                      No unpaid students found for{" "}
+                      <strong>{reminderGradeFilter}</strong>
+                      {reminderSearch.trim()
+                        ? ` matching "${reminderSearch.trim()}"`
+                        : ""}
+                      .
+                    </p>
+                  ) : (
+                    filteredDueStudents.map((stu) => {
                     const nextDue = stu.billing.schedule.find(
                       (item) => item.status !== "Paid"
                     );
@@ -1979,7 +2066,8 @@ export default function RegistrarDashboard({
                         </div>
                       </div>
                     );
-                  })}
+                  })
+                  )}
                 </div>
               </div>
 
