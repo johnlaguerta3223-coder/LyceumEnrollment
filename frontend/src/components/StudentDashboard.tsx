@@ -1711,7 +1711,7 @@ export default function StudentDashboard({
                         <span>From:</span>{" "}
                         <strong>
                           Lyceum ng Kabataan Academy Billing
-                          &lt;lyceumcaloocan@yahoo.com&gt;
+                          &lt;lyceumbilling2026@gmail.com&gt;
                         </strong>
                       </div>
                       <div>
