@@ -370,6 +370,32 @@ export default function AdminDashboard({
     }
   };
 
+  const handleDeleteUser = async (user: UserAccountRow) => {
+    const confirmed = window.confirm(
+      `Are you sure you want to permanently delete the account for "${user.name}" (${user.email})? This action cannot be undone.`
+    );
+    if (!confirmed) return;
+    try {
+      setProcessing(true);
+      const res = await axios.delete(
+        `${API_BASE}/api/auth/admin/users/${user.id}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (selectedUserDetail?.id === user.id) {
+        setSelectedUserDetail(null);
+      }
+      setBannerMsg({ type: "success", text: res.data.message });
+      await fetchAdminOverview();
+    } catch (err: any) {
+      setBannerMsg({
+        type: "error",
+        text: err.response?.data?.detail || "Failed to delete account.",
+      });
+    } finally {
+      setProcessing(false);
+    }
+  };
+
   const handleResetUserPassword = async (e: React.FormEvent, userId: number) => {
     e.preventDefault();
     try {
@@ -1602,6 +1628,17 @@ export default function AdminDashboard({
                           disabled={processing}
                         >
                           {u.is_active ? "Deactivate" : "Activate"}
+                        </button>
+                        <button
+                          type="button"
+                          className="table-pay-btn"
+                          style={{
+                            background: "#475569",
+                          }}
+                          onClick={() => handleDeleteUser(u)}
+                          disabled={processing}
+                        >
+                          Delete
                         </button>
                       </div>
                     </div>

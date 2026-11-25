@@ -1914,3 +1914,31 @@ def admin_reset_user_password(
     return {
         "message": f"Password reset successful for {target.student_name or target.name} ({target.email})!"
     }
+
+
+@router.delete("/admin/users/{user_id}")
+def admin_delete_user(
+    user_id: int,
+    current_user: Parent = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    ensure_admin(current_user)
+    target = db.query(Parent).filter(Parent.id == user_id).first()
+    if not target:
+        raise HTTPException(status_code=404, detail="User account not found.")
+    if target.id == current_user.id:
+        raise HTTPException(
+            status_code=400,
+            detail="You cannot delete your own active Admin account.",
+        )
+
+    deleted_name = target.student_name or target.name
+    deleted_email = target.email
+    db.query(PaymentRecord).filter(PaymentRecord.user_id == target.id).delete()
+    db.query(PaymentReminder).filter(PaymentReminder.user_id == target.id).delete()
+    db.query(PromissoryNote).filter(PromissoryNote.user_id == target.id).delete()
+    db.delete(target)
+    db.commit()
+    return {
+        "message": f"Account for {deleted_name} ({deleted_email}) has been permanently deleted."
+    }
