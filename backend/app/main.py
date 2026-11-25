@@ -251,6 +251,112 @@ def create_tables_and_seed_users():
             )
             db.commit()
 
+        # Seed a third student account with upcoming Exam Due Date (Not Fully Paid, No Promissory yet)
+        third_student = (
+            db.query(Parent).filter(Parent.email == "mendoza.due@example.com").first()
+        )
+        if third_student is None:
+            third_student = Parent(
+                name="Gabriel Santos Mendoza",
+                email="mendoza.due@example.com",
+                phone="09193456789",
+                hashed_password=get_password_hash("test123"),
+                role="parent",
+                is_active=True,
+                is_verified=True,
+                student_id_no="LKA-2026-0649",
+                student_name="Gabriel Santos Mendoza",
+                student_lrn="136498000789",
+                student_type="old",
+                grade_level="Grade 5",
+                class_shift="afternoon",
+                assigned_section="Section 3 (Afternoon)",
+                birthdate="2015-10-12",
+                gender="Male",
+                address="Phase 4-B, Pkg 7, Blk 98, Brgy. Bagong Silang, Caloocan City",
+                parent_guardian_name="Elena Santos Mendoza",
+                relationship_to_student="Mother",
+                previous_school="Lyceum ng Kabataan Academy, Inc.",
+                payment_plan="quarterly",
+                payment_method="cash",
+                amount_paid=7155.50,
+                requirements_submitted=json.dumps(
+                    ["report_card_sf9", "previous_balance_clearance", "id_picture_renewal"]
+                ),
+                enrollment_status="Officially Enrolled",
+            )
+            db.add(third_student)
+            db.commit()
+            db.refresh(third_student)
+
+            db.add(
+                PaymentRecord(
+                    user_id=third_student.id,
+                    or_number="OR-2026-10479",
+                    description="Upon Enrollment Downpayment (Miscellaneous Fee)",
+                    amount=7155.50,
+                    payment_method="Cash at LKA School Cashier",
+                    reference_no="CASH-OR-10479",
+                    paid_at="May 26, 2026 · 10:15 AM",
+                    status="Verified & Official Receipt Issued",
+                )
+            )
+            db.commit()
+
+        # Seed a fourth student account using user's personal Gmail for live email reminder testing
+        gmail_test_student = (
+            db.query(Parent)
+            .filter(Parent.email == "johnlaguerta3223@gmail.com")
+            .first()
+        )
+        if gmail_test_student is None:
+            gmail_test_student = Parent(
+                name="Marco Paolo Laguerta",
+                email="johnlaguerta3223@gmail.com",
+                phone="09175551234",
+                hashed_password=get_password_hash("test123"),
+                role="parent",
+                is_active=True,
+                is_verified=True,
+                student_id_no="LKA-2026-0648",
+                student_name="Marco Paolo Laguerta",
+                student_lrn="136498000888",
+                student_type="old",
+                grade_level="Grade 3",
+                class_shift="morning",
+                assigned_section="Section 1 (Morning)",
+                birthdate="2017-05-20",
+                gender="Male",
+                address="Phase 4-B, Pkg 7, Blk 103, Brgy. Bagong Silang, Caloocan City",
+                parent_guardian_name="John Christian Laguerta",
+                relationship_to_student="Father",
+                previous_school="Lyceum ng Kabataan Academy, Inc.",
+                payment_plan="quarterly",
+                payment_method="cash",
+                amount_paid=7155.50,
+                requirements_submitted=json.dumps(
+                    ["report_card_sf9", "previous_balance_clearance", "id_picture_renewal"]
+                ),
+                enrollment_status="Officially Enrolled",
+            )
+            db.add(gmail_test_student)
+            db.commit()
+            db.refresh(gmail_test_student)
+
+            db.add(
+                PaymentRecord(
+                    user_id=gmail_test_student.id,
+                    or_number="OR-2026-10475",
+                    description="Upon Enrollment Downpayment (Miscellaneous Fee)",
+                    amount=7155.50,
+                    payment_method="Cash at LKA School Cashier",
+                    reference_no="CASH-OR-10475",
+                    paid_at="May 25, 2026 · 09:10 AM",
+                    status="Verified & Official Receipt Issued",
+                )
+            )
+            db.commit()
+
         staff_accounts = [
             {
                 "name": "School Registrar",
