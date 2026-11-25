@@ -1323,11 +1323,16 @@ def registrar_send_student_payment_reminder(
         raise HTTPException(status_code=404, detail="Student record not found.")
 
     billing = compute_student_billing(student)
+    if billing["remaining_balance"] <= 0:
+        raise HTTPException(
+            status_code=400,
+            detail=f"{student.student_name} is already Fully Paid (₱0.00 balance) and does not need a payment reminder.",
+        )
     rem = build_email_reminder_record(student, billing)
     db.add(rem)
     db.commit()
     return {
-        "message": f"Payment reminder email sent to {student.parent_guardian_name} ({rem.recipient_email}) for {student.student_name}!"
+        "message": f"Payment reminder sent to {student.student_name}'s Student/Parent Portal!"
     }
 
 
@@ -1339,7 +1344,10 @@ def registrar_send_bulk_payment_reminders(
     ensure_registrar_or_admin(current_user)
     students = (
         db.query(Parent)
-        .filter(Parent.role == "parent")
+        .filter(
+            Parent.role == "parent",
+            Parent.enrollment_status == "Officially Enrolled",
+        )
         .all()
     )
     sent_count = 0
@@ -1351,7 +1359,7 @@ def registrar_send_bulk_payment_reminders(
             sent_count += 1
     db.commit()
     return {
-        "message": f"Automated payment reminder emails sent to {sent_count} parent/guardian account(s) with remaining balances!"
+        "message": f"Payment reminders sent to {sent_count} student account(s) with remaining balances (Fully Paid students excluded)."
     }
 
 
