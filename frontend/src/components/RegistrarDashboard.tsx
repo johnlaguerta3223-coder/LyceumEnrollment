@@ -1209,10 +1209,6 @@ export default function RegistrarDashboard({
                       Officially Enrolled Students Masterlist &amp; Tuition
                       Payment Search
                     </h3>
-                    <p>
-                      Type a student&apos;s name, Student ID, or guardian name to
-                      instantly view their balance and record a tuition payment.
-                    </p>
                   </div>
                 </div>
                 <button
@@ -2122,11 +2118,6 @@ export default function RegistrarDashboard({
                       Digital Promissory Note Approval Queue (
                       {allPromissoryNotes.length})
                     </h3>
-                    <p>
-                      Approve 1-week promissory extensions (₱0.00 late penalty)
-                      to automatically issue a Digital Exam Permit and notify
-                      parents via email
-                    </p>
                   </div>
                 </div>
 
@@ -2241,10 +2232,6 @@ export default function RegistrarDashboard({
                     <h3>
                       Periodical Exam Clearance &amp; Delinquency Tracker
                     </h3>
-                    <p>
-                      Real-time web verification for August (1st Qtr), October
-                      (2nd Qtr), January (3rd Qtr), and March (4th Qtr) exams
-                    </p>
                   </div>
                 </div>
 
