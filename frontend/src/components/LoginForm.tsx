@@ -21,7 +21,12 @@ import {
 
 type Status = { type: "success" | "error"; text: string } | null;
 type UserRole = "parent" | "registrar" | "admin";
-type AuthView = "login" | "register" | "registered_slip" | "forgot";
+type AuthView =
+  | "login"
+  | "register"
+  | "registered_slip"
+  | "forgot"
+  | "forgot_username";
 type StudentType = "new" | "old" | "transferee";
 type PaymentPlanKey = "cash" | "quarterly" | "monthly";
 
@@ -372,6 +377,16 @@ export default function LoginForm({
   const [fpConfirmPassword, setFpConfirmPassword] = useState("");
   const [showFpPassword, setShowFpPassword] = useState(false);
 
+  // Forgot Username state
+  const [fuName, setFuName] = useState("");
+  const [fuPhone, setFuPhone] = useState("");
+  const [foundAccount, setFoundAccount] = useState<{
+    username: string;
+    student_name: string;
+    student_id_no: string;
+    enrollment_status: string;
+  } | null>(null);
+
   const [status, setStatus] = useState<Status>(null);
   const [loading, setLoading] = useState(false);
   const [registeredSlip, setRegisteredSlip] = useState<{
@@ -622,6 +637,35 @@ export default function LoginForm({
     }
   };
 
+  const handleForgotUsernameSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setStatus(null);
+    setFoundAccount(null);
+    setLoading(true);
+    try {
+      const res = await axios.post(`${API_BASE}/api/auth/forgot-username`, {
+        student_name: fuName,
+        phone: fuPhone,
+      });
+      setFoundAccount(res.data);
+      setStatus({
+        type: "success",
+        text: "Account found! Your registered username is shown below.",
+      });
+    } catch (err: any) {
+      const detail = err.response?.data?.detail;
+      setStatus({
+        type: "error",
+        text:
+          typeof detail === "string"
+            ? detail
+            : "No account found matching that name and mobile number.",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const roleMeta = ROLE_INFO[selectedRole];
   const currentGradeMeta = GRADE_META[gradeLevel] || GRADE_META["Kinder 1"];
   const isOldStudent = studentType === "old";
@@ -714,10 +758,22 @@ export default function LoginForm({
 
               <form onSubmit={handleLoginSubmit} className="hoa-form">
                 <div className="hoa-field">
-                  <label htmlFor="email">
-                    <IconMail size={14} />
-                    <span>Username</span>
-                  </label>
+                  <div className="hoa-label-row">
+                    <label htmlFor="email">
+                      <IconMail size={14} />
+                      <span>Username</span>
+                    </label>
+                    <button
+                      type="button"
+                      className="forgot-link-btn"
+                      onClick={() => {
+                        setFoundAccount(null);
+                        switchView("forgot_username");
+                      }}
+                    >
+                      Forgot username?
+                    </button>
+                  </div>
                   <input
                     id="email"
                     type="text"
@@ -1624,6 +1680,105 @@ export default function LoginForm({
 
               {status && (
                 <div className={`alert ${status.type}`}>{status.text}</div>
+              )}
+
+              <div className="auth-switch-box">
+                <button
+                  type="button"
+                  className="register-switch-btn"
+                  onClick={() => switchView("login")}
+                >
+                  ← Back to Login
+                </button>
+              </div>
+            </div>
+          )}
+
+          {view === "forgot_username" && (
+            /* ================= FORGOT USERNAME VIEW ================= */
+            <div className="auth-card-inner">
+              <div className="auth-header-block">
+                <span className="auth-step-tag">Account Recovery</span>
+                <h2>Find Your Username</h2>
+                <p className="subtitle">
+                  Enter the student&apos;s full name and registered mobile number
+                  to recover your username.
+                </p>
+              </div>
+
+              <form onSubmit={handleForgotUsernameSubmit}>
+                <div className="field">
+                  <label htmlFor="fu-name">Student / Account Full Name</label>
+                  <div className="input-wrap with-icon">
+                    <span className="input-icon">
+                      <IconUser size={17} />
+                    </span>
+                    <input
+                      id="fu-name"
+                      type="text"
+                      required
+                      placeholder="e.g. Mark Laguerta"
+                      value={fuName}
+                      onChange={(e) => setFuName(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div className="field">
+                  <label htmlFor="fu-phone">Registered Mobile Number</label>
+                  <div className="input-wrap with-icon">
+                    <span className="input-icon">
+                      <IconPhone size={17} />
+                    </span>
+                    <input
+                      id="fu-phone"
+                      type="tel"
+                      required
+                      placeholder="09171234567"
+                      value={fuPhone}
+                      onChange={(e) => setFuPhone(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <button type="submit" className="login-btn" disabled={loading}>
+                  {loading ? "Searching..." : "Find My Username →"}
+                </button>
+              </form>
+
+              {status && (
+                <div className={`alert ${status.type}`}>{status.text}</div>
+              )}
+
+              {foundAccount && (
+                <div
+                  className="enroll-assessment-box"
+                  style={{ marginTop: "16px" }}
+                >
+                  <div className="assessment-rows">
+                    <div className="assessment-row">
+                      <span>Account / Student:</span>
+                      <strong>
+                        {foundAccount.student_name} ({foundAccount.student_id_no})
+                      </strong>
+                    </div>
+                    <div className="assessment-row highlight-row">
+                      <span>Your Username:</span>
+                      <strong>{foundAccount.username}</strong>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    className="login-btn"
+                    style={{ marginTop: "12px" }}
+                    onClick={() => {
+                      setEmail(foundAccount.username);
+                      switchView("login");
+                    }}
+                  >
+                    Use This Username to Login →
+                  </button>
+                </div>
               )}
 
               <div className="auth-switch-box">

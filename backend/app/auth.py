@@ -652,6 +652,45 @@ def register(payload: RegisterRequest, db: Session = Depends(get_db)):
     }
 
 
+class ForgotUsernameRequest(BaseModel):
+    student_name: str
+    phone: str
+
+
+@router.post("/forgot-username")
+def forgot_username(payload: ForgotUsernameRequest, db: Session = Depends(get_db)):
+    name_clean = payload.student_name.strip().lower()
+    phone_clean = payload.phone.strip()
+
+    if not name_clean or not phone_clean:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Please enter both the Student / Account Name and Registered Mobile Number.",
+        )
+
+    candidates = db.query(Parent).filter(Parent.phone == phone_clean).all()
+    matched = None
+    for c in candidates:
+        s_name = (c.student_name or "").strip().lower()
+        u_name = (c.name or "").strip().lower()
+        if name_clean == s_name or name_clean == u_name or (name_clean and (name_clean in s_name or name_clean in u_name)):
+            matched = c
+            break
+
+    if not matched:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No account found matching that name and mobile number.",
+        )
+
+    return {
+        "username": matched.email,
+        "student_name": matched.student_name or matched.name,
+        "student_id_no": matched.student_id_no or "Staff / Admin",
+        "enrollment_status": matched.enrollment_status or "Active",
+    }
+
+
 @router.post("/forgot-password")
 def forgot_password(payload: ForgotPasswordRequest, db: Session = Depends(get_db)):
     email_clean = payload.email.strip().lower()
