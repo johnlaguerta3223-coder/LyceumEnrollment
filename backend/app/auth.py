@@ -2,6 +2,7 @@ import json
 import os
 import random
 import smtplib
+import urllib.request
 from datetime import datetime, timedelta
 from email.message import EmailMessage
 from typing import Any, Dict, List, Optional
@@ -409,34 +410,93 @@ def build_email_reminder_record(
         f"Lyceum ng Kabataan Academy, Inc. · Brgy. Bagong Silang, Caloocan City"
     )
 
-    delivery_status = "Portal Only (Set SMTP_USER/SMTP_PASSWORD for Live Gmail)"
+    delivery_status = "Portal Saved (Set BREVO_API_KEY for Live Email on Render)"
+    brevo_key = (os.getenv("BREVO_API_KEY") or "").strip()
+    resend_key = (os.getenv("RESEND_API_KEY") or "").strip()
     smtp_user = (os.getenv("SMTP_USER") or "").strip()
-    smtp_pass = (os.getenv("SMTP_PASSWORD") or "").strip()
-    if smtp_user and smtp_pass:
+    smtp_pass = (os.getenv("SMTP_PASSWORD") or "").replace(" ", "").strip()
+    sender_email = (os.getenv("BREVO_SENDER_EMAIL") or smtp_user).strip()
+
+    sent_ok = False
+    if brevo_key and sender_email:
+        try:
+            payload_bytes = json.dumps(
+                {
+                    "sender": {
+                        "name": "Lyceum ng Kabataan Academy Billing",
+                        "email": sender_email,
+                    },
+                    "to": [{"email": recipient, "name": guardian_name}],
+                    "subject": subject,
+                    "textContent": body,
+                }
+            ).encode("utf-8")
+            req = urllib.request.Request(
+                "https://api.brevo.com/v3/smtp/email",
+                data=payload_bytes,
+                headers={
+                    "api-key": brevo_key,
+                    "Content-Type": "application/json",
+                    "Accept": "application/json",
+                },
+                method="POST",
+            )
+            with urllib.request.urlopen(req, timeout=12) as resp:
+                if 200 <= resp.status < 300:
+                    sent_ok = True
+        except Exception as brevo_err:
+            print(f"[BREVO ERROR] Failed sending to {recipient}: {brevo_err}")
+
+    if not sent_ok and resend_key:
+        try:
+            payload_bytes = json.dumps(
+                {
+                    "from": "Lyceum Billing <onboarding@resend.dev>",
+                    "to": [recipient],
+                    "subject": subject,
+                    "text": body,
+                }
+            ).encode("utf-8")
+            req = urllib.request.Request(
+                "https://api.resend.com/emails",
+                data=payload_bytes,
+                headers={
+                    "Authorization": f"Bearer {resend_key}",
+                    "Content-Type": "application/json",
+                },
+                method="POST",
+            )
+            with urllib.request.urlopen(req, timeout=12) as resp:
+                if 200 <= resp.status < 300:
+                    sent_ok = True
+        except Exception as resend_err:
+            print(f"[RESEND ERROR] Failed sending to {recipient}: {resend_err}")
+
+    if not sent_ok and smtp_user and smtp_pass:
         msg = EmailMessage()
         msg["Subject"] = subject
         msg["From"] = f"Lyceum ng Kabataan Academy Billing <{smtp_user}>"
         msg["To"] = recipient
         msg.set_content(body)
-        sent_ok = False
         try:
-            with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=12) as server:
+            with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=10) as server:
                 server.login(smtp_user, smtp_pass)
                 server.send_message(msg)
             sent_ok = True
         except Exception:
             try:
-                with smtplib.SMTP("smtp.gmail.com", 587, timeout=12) as server:
+                with smtplib.SMTP("smtp.gmail.com", 587, timeout=10) as server:
                     server.starttls()
                     server.login(smtp_user, smtp_pass)
                     server.send_message(msg)
                 sent_ok = True
             except Exception as smtp_err:
                 print(f"[SMTP ERROR] Failed sending to {recipient}: {smtp_err}")
-        if sent_ok:
-            delivery_status = "Delivered to Live Gmail & Portal"
-        else:
-            delivery_status = "Portal Saved (Gmail SMTP Failed — Check App Password)"
+
+    if sent_ok:
+        delivery_status = "Successfully Sent to Email & Portal"
+    elif brevo_key or resend_key or (smtp_user and smtp_pass):
+        delivery_status = "Portal Saved (Email Provider Error — Check Key)"
 
     now_str = datetime.now().strftime("%b %d, %Y · %I:%M %p")
     return PaymentReminder(

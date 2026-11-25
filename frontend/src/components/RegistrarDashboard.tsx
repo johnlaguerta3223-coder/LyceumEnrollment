@@ -914,9 +914,39 @@ export default function RegistrarDashboard({
             {bannerMsg && (
               <div
                 className={`alert ${bannerMsg.type}`}
-                style={{ marginBottom: "18px" }}
+                style={{
+                  position: "fixed",
+                  top: "18px",
+                  right: "18px",
+                  zIndex: 9999,
+                  maxWidth: "440px",
+                  width: "calc(100vw - 36px)",
+                  boxShadow: "0 14px 36px rgba(15, 23, 42, 0.2)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: "12px",
+                  margin: 0,
+                }}
               >
-                {bannerMsg.text}
+                <span>{bannerMsg.text}</span>
+                <button
+                  type="button"
+                  onClick={() => setBannerMsg(null)}
+                  style={{
+                    background: "transparent",
+                    border: "none",
+                    color: "inherit",
+                    fontWeight: 700,
+                    fontSize: "1rem",
+                    cursor: "pointer",
+                    lineHeight: 1,
+                    padding: "2px 6px",
+                  }}
+                  aria-label="Close notification"
+                >
+                  ×
+                </button>
               </div>
             )}
 
