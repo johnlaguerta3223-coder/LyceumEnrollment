@@ -1654,11 +1654,15 @@ export default function RegistrarDashboard({
                       REQUIREMENTS_CATALOG[
                         selectedPendingStudent.student_type
                       ] || REQUIREMENTS_CATALOG.new;
-                    const allReqsDone = reqDocs.every((r) =>
-                      selectedPendingStudent.requirements_submitted.includes(
-                        r.id
-                      )
-                    );
+                    const isOldStudent =
+                      selectedPendingStudent.student_type === "old";
+                    const allReqsDone =
+                      isOldStudent ||
+                      reqDocs.every((r) =>
+                        selectedPendingStudent.requirements_submitted.includes(
+                          r.id
+                        )
+                      );
                     const dpPaid =
                       selectedPendingStudent.billing.amount_paid + 0.5 >=
                       selectedPendingStudent.billing.downpayment_required;
@@ -1910,9 +1914,11 @@ export default function RegistrarDashboard({
                                   allReqsDone ? "text-green" : "text-pink"
                                 }
                               >
-                                {allReqsDone
+                                {isOldStudent
+                                  ? "Exempted (Old Student)"
+                                  : allReqsDone
                                   ? "Complete (All Hardcopies Received)"
-                                  : "Incomplete (Waiting for Hardcopies)"}
+                                  : "Incomplete (To Follow — Can Enroll After Payment)"}
                               </strong>
                             </div>
                             <div className="assessment-row">

@@ -1675,12 +1675,12 @@ def registrar_officially_enroll_student(
             detail=f"Cannot enroll student yet: Initial tuition/downpayment of ₱{billing['downpayment_required']:,.2f} must be paid first.",
         )
 
-    if missing_reqs:
-        student.enrollment_status = "Conditionally Enrolled (Requirements To Follow)"
-        status_note = f"Conditionally Enrolled ({len(missing_reqs)} requirement(s) to follow). Student Portal is unlocked; will become Officially Enrolled once all requirements are submitted."
-    else:
+    if s_type == "old" or not missing_reqs:
         student.enrollment_status = "Officially Enrolled"
         status_note = "now Officially Enrolled! Their full Student Portal Dashboard is now unlocked."
+    else:
+        student.enrollment_status = "Conditionally Enrolled (Requirements To Follow)"
+        status_note = f"Conditionally Enrolled ({len(missing_reqs)} requirement(s) to follow). Student Portal is unlocked; will become Officially Enrolled once all requirements are submitted."
 
     if not student.assigned_section:
         student.assigned_section = assign_section_for_student(
