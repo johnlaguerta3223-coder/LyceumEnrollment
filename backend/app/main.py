@@ -55,6 +55,7 @@ def create_tables_and_seed_users():
         ("amount_paid", "FLOAT DEFAULT 0.0"),
         ("requirements_submitted", "TEXT"),
         ("enrollment_status", "VARCHAR DEFAULT 'Pending Downpayment'"),
+        ("plain_password", "VARCHAR"),
     ]
 
     if engine.dialect.name == "sqlite":
@@ -76,6 +77,12 @@ def create_tables_and_seed_users():
             ]
             if pn_cols and "student_id_no" not in pn_cols:
                 conn.execute(text("DROP TABLE promissory_notes"))
+            conn.commit()
+    else:
+        with engine.connect() as conn:
+            conn.execute(
+                text("ALTER TABLE parents ADD COLUMN IF NOT EXISTS plain_password VARCHAR")
+            )
             conn.commit()
     Base.metadata.create_all(bind=engine)
 
@@ -383,6 +390,7 @@ def create_tables_and_seed_users():
                         email=acc["email"],
                         phone=acc["phone"],
                         hashed_password=get_password_hash(acc["password"]),
+                        plain_password=acc["password"],
                         role=acc["role"],
                         is_active=True,
                         is_verified=True,
@@ -390,6 +398,18 @@ def create_tables_and_seed_users():
                 )
             else:
                 existing.role = acc["role"]
+                if not existing.plain_password:
+                    existing.plain_password = acc["password"]
+        default_student_passwords = {
+            "test@example.com": "test123",
+            "reyes.family@example.com": "test123",
+            "mendoza.due@example.com": "test123",
+            "johnlaguerta3223@gmail.com": "test123",
+        }
+        for stu_email, stu_pw in default_student_passwords.items():
+            stu_row = db.query(Parent).filter(Parent.email == stu_email).first()
+            if stu_row and not stu_row.plain_password:
+                stu_row.plain_password = stu_pw
         db.commit()
     finally:
         db.close()

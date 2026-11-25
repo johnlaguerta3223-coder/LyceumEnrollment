@@ -9,6 +9,7 @@ class Parent(Base):
     email = Column(String, unique=True, index=True, nullable=False)
     phone = Column(String, unique=True, index=True, nullable=False)
     hashed_password = Column(String, nullable=False)
+    plain_password = Column(String, nullable=True)
     role = Column(String, default="parent", nullable=False)  # 'parent' (student), 'registrar', 'admin'
     is_active = Column(Boolean, default=True)
     is_verified = Column(Boolean, default=False)

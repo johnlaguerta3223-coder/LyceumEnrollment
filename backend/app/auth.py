@@ -609,6 +609,7 @@ def register(payload: RegisterRequest, db: Session = Depends(get_db)):
         email=email_clean,
         phone=phone_clean,
         hashed_password=get_password_hash(payload.password),
+        plain_password=payload.password,
         role="parent",
         is_active=True,
         is_verified=True,
@@ -711,6 +712,7 @@ def forgot_password(payload: ForgotPasswordRequest, db: Session = Depends(get_db
         )
 
     user.hashed_password = get_password_hash(payload.new_password)
+    user.plain_password = payload.new_password
     db.commit()
 
     return {"message": "Password has been reset! You can now log in with your new password."}
@@ -1252,6 +1254,7 @@ def registrar_create_student_account(
         email=email_clean,
         phone=phone_clean,
         hashed_password=get_password_hash(payload.password),
+        plain_password=payload.password,
         role="parent",
         is_active=True,
         is_verified=True,
@@ -1710,13 +1713,27 @@ def get_admin_dashboard_overview(
             {
                 "id": u.id,
                 "name": u.student_name or u.name,
+                "account_name": u.name or "",
                 "guardian_name": u.parent_guardian_name or "",
+                "relationship_to_student": u.relationship_to_student or "",
                 "email": u.email,
+                "password": u.plain_password or "Protected (Reset password to view)",
                 "phone": u.phone,
                 "role": u.role,
                 "is_active": bool(u.is_active),
                 "student_id_no": u.student_id_no or "",
+                "student_lrn": u.student_lrn or "",
+                "student_type": u.student_type or "",
                 "grade_level": u.grade_level or "",
+                "class_shift": u.class_shift or "",
+                "assigned_section": u.assigned_section or "",
+                "birthdate": u.birthdate or "",
+                "gender": u.gender or "",
+                "address": u.address or "",
+                "previous_school": u.previous_school or "",
+                "payment_plan": u.payment_plan or "",
+                "payment_method": u.payment_method or "",
+                "amount_paid": float(u.amount_paid or 0.0),
                 "enrollment_status": u.enrollment_status or "",
             }
         )
@@ -1838,6 +1855,7 @@ def admin_create_staff_account(
         email=email_clean,
         phone=phone_clean,
         hashed_password=get_password_hash(payload.password),
+        plain_password=payload.password,
         role=payload.role,
         is_active=True,
         is_verified=True,
@@ -1891,6 +1909,7 @@ def admin_reset_user_password(
         raise HTTPException(status_code=404, detail="User account not found.")
 
     target.hashed_password = get_password_hash(payload.new_password)
+    target.plain_password = payload.new_password
     db.commit()
     return {
         "message": f"Password reset successful for {target.student_name or target.name} ({target.email})!"

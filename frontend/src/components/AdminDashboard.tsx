@@ -74,13 +74,27 @@ interface CollectionRow {
 interface UserAccountRow {
   id: number;
   name: string;
+  account_name?: string;
   guardian_name: string;
+  relationship_to_student?: string;
   email: string;
+  password?: string;
   phone: string;
   role: "parent" | "registrar" | "admin";
   is_active: boolean;
   student_id_no: string;
+  student_lrn?: string;
+  student_type?: string;
   grade_level: string;
+  class_shift?: string;
+  assigned_section?: string;
+  birthdate?: string;
+  gender?: string;
+  address?: string;
+  previous_school?: string;
+  payment_plan?: string;
+  payment_method?: string;
+  amount_paid?: number;
   enrollment_status: string;
 }
 
@@ -150,6 +164,9 @@ export default function AdminDashboard({
   >("all");
   const [resettingUserId, setResettingUserId] = useState<number | null>(null);
   const [resetNewPass, setResetNewPass] = useState<string>("");
+  const [selectedUserDetail, setSelectedUserDetail] =
+    useState<UserAccountRow | null>(null);
+  const [showDetailPassword, setShowDetailPassword] = useState<boolean>(false);
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(() =>
     typeof window !== "undefined" ? window.innerWidth > 920 : true
   );
@@ -1538,6 +1555,7 @@ export default function AdminDashboard({
                         style={{
                           display: "flex",
                           justifyContent: "flex-end",
+                          flexWrap: "wrap",
                           gap: "8px",
                           marginTop: "8px",
                         }}
@@ -1545,7 +1563,28 @@ export default function AdminDashboard({
                         <button
                           type="button"
                           className="step-back-btn"
-                          style={{ padding: "5px 10px", fontSize: "0.76rem" }}
+                          style={{
+                            width: "auto",
+                            flex: "0 0 auto",
+                            padding: "5px 10px",
+                            fontSize: "0.76rem",
+                          }}
+                          onClick={() => {
+                            setSelectedUserDetail(u);
+                            setShowDetailPassword(false);
+                          }}
+                        >
+                          <IconUsers size={13} /> View Details
+                        </button>
+                        <button
+                          type="button"
+                          className="step-back-btn"
+                          style={{
+                            width: "auto",
+                            flex: "0 0 auto",
+                            padding: "5px 10px",
+                            fontSize: "0.76rem",
+                          }}
                           onClick={() => {
                             setResettingUserId(u.id);
                             setResetNewPass("");
@@ -1575,6 +1614,194 @@ export default function AdminDashboard({
           </div>
         </div>
       </div>
+
+      {/* ===== ACCOUNT FULL DETAILS MODAL ===== */}
+      {selectedUserDetail && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(15, 23, 42, 0.52)",
+            zIndex: 1000,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "16px",
+          }}
+          onClick={() => setSelectedUserDetail(null)}
+        >
+          <div
+            style={{
+              background: "#ffffff",
+              borderRadius: "16px",
+              maxWidth: "600px",
+              width: "100%",
+              maxHeight: "88vh",
+              overflowY: "auto",
+              padding: "24px",
+              boxShadow: "0 20px 50px rgba(15, 23, 42, 0.28)",
+              border: "1px solid #f3d5e6",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: "12px",
+                marginBottom: "16px",
+                paddingBottom: "12px",
+                borderBottom: "1px solid #f1f5f9",
+              }}
+            >
+              <div>
+                <h3 style={{ margin: 0, fontSize: "1.15rem" }}>
+                  {selectedUserDetail.name}
+                </h3>
+                <span style={{ fontSize: "0.8rem", color: "#64748b" }}>
+                  {selectedUserDetail.role === "parent"
+                    ? `Student / Parent Account · ${
+                        selectedUserDetail.student_id_no || "No ID"
+                      }`
+                    : `${selectedUserDetail.role.toUpperCase()} Account`}
+                </span>
+              </div>
+              <button
+                type="button"
+                className="step-back-btn"
+                style={{ width: "auto", padding: "6px 12px" }}
+                onClick={() => setSelectedUserDetail(null)}
+              >
+                Close
+              </button>
+            </div>
+
+            <div className="enroll-assessment-box" style={{ marginBottom: "14px" }}>
+              <div className="assessment-header">
+                <IconKey size={16} />
+                <strong>Account Credentials &amp; Status</strong>
+              </div>
+              <div className="assessment-rows">
+                <div className="assessment-row">
+                  <span>Username / Email:</span>
+                  <strong>{selectedUserDetail.email}</strong>
+                </div>
+                <div className="assessment-row highlight-row">
+                  <span>Password:</span>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                    }}
+                  >
+                    <strong>
+                      {showDetailPassword
+                        ? selectedUserDetail.password || "Not available"
+                        : "••••••••"}
+                    </strong>
+                    <button
+                      type="button"
+                      className="forgot-link-btn"
+                      onClick={() => setShowDetailPassword((prev) => !prev)}
+                    >
+                      {showDetailPassword ? "Hide" : "Show"}
+                    </button>
+                  </div>
+                </div>
+                <div className="assessment-row">
+                  <span>Mobile Number:</span>
+                  <strong>{selectedUserDetail.phone}</strong>
+                </div>
+                <div className="assessment-row">
+                  <span>Account Status:</span>
+                  <strong>
+                    {selectedUserDetail.is_active ? "Active" : "Deactivated"}
+                  </strong>
+                </div>
+              </div>
+            </div>
+
+            {selectedUserDetail.role === "parent" && (
+              <div className="enroll-assessment-box">
+                <div className="assessment-header">
+                  <IconUsers size={16} />
+                  <strong>Student, Guardian &amp; Billing Details</strong>
+                </div>
+                <div className="assessment-rows">
+                  <div className="assessment-row">
+                    <span>Student ID:</span>
+                    <strong>{selectedUserDetail.student_id_no || "—"}</strong>
+                  </div>
+                  <div className="assessment-row">
+                    <span>Student LRN:</span>
+                    <strong>{selectedUserDetail.student_lrn || "—"}</strong>
+                  </div>
+                  <div className="assessment-row">
+                    <span>Student Type:</span>
+                    <strong style={{ textTransform: "capitalize" }}>
+                      {selectedUserDetail.student_type || "—"}
+                    </strong>
+                  </div>
+                  <div className="assessment-row">
+                    <span>Grade &amp; Section:</span>
+                    <strong>
+                      {selectedUserDetail.grade_level || "—"} ·{" "}
+                      {selectedUserDetail.assigned_section || "—"}
+                    </strong>
+                  </div>
+                  <div className="assessment-row">
+                    <span>Class Shift:</span>
+                    <strong style={{ textTransform: "capitalize" }}>
+                      {selectedUserDetail.class_shift || "—"}
+                    </strong>
+                  </div>
+                  <div className="assessment-row">
+                    <span>Birthdate &amp; Gender:</span>
+                    <strong>
+                      {selectedUserDetail.birthdate || "—"} ·{" "}
+                      {selectedUserDetail.gender || "—"}
+                    </strong>
+                  </div>
+                  <div className="assessment-row">
+                    <span>Home Address:</span>
+                    <strong>{selectedUserDetail.address || "—"}</strong>
+                  </div>
+                  <div className="assessment-row">
+                    <span>Parent / Guardian:</span>
+                    <strong>
+                      {selectedUserDetail.guardian_name || "—"} (
+                      {selectedUserDetail.relationship_to_student || "Guardian"})
+                    </strong>
+                  </div>
+                  <div className="assessment-row">
+                    <span>Previous School:</span>
+                    <strong>{selectedUserDetail.previous_school || "—"}</strong>
+                  </div>
+                  <div className="assessment-row">
+                    <span>Enrollment Status:</span>
+                    <strong>{selectedUserDetail.enrollment_status || "—"}</strong>
+                  </div>
+                  <div className="assessment-row">
+                    <span>Payment Plan &amp; Method:</span>
+                    <strong style={{ textTransform: "capitalize" }}>
+                      {selectedUserDetail.payment_plan || "—"} ·{" "}
+                      {selectedUserDetail.payment_method || "cash"}
+                    </strong>
+                  </div>
+                  <div className="assessment-row highlight-row">
+                    <span>Total Amount Paid:</span>
+                    <strong>
+                      {formatPeso(selectedUserDetail.amount_paid || 0)}
+                    </strong>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
