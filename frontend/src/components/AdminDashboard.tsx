@@ -675,9 +675,78 @@ export default function AdminDashboard({
                   <div>
                     <div className="lka-welcome-date">{dateStr}</div>
                     <div className="lka-welcome-time">{timeStr}</div>
-                    <h1 style={{ marginBottom: "14px" }}>
+                    <h1 style={{ marginBottom: "10px" }}>
                       Hello {adminDisplayName}!
                     </h1>
+                    <div
+                      style={{
+                        display: "flex",
+                        flexWrap: "wrap",
+                        gap: "8px",
+                        marginBottom: "14px",
+                      }}
+                    >
+                      <span
+                        style={{
+                          padding: "5px 11px",
+                          borderRadius: "999px",
+                          fontSize: "0.8rem",
+                          fontWeight: 600,
+                          background: enrollmentOpen ? "#dcfce7" : "#fee2e2",
+                          color: enrollmentOpen ? "#166534" : "#991b1b",
+                        }}
+                      >
+                        Enrollment: {enrollmentOpen ? "Open" : "Closed"}
+                      </span>
+                      <span
+                        style={{
+                          padding: "5px 11px",
+                          borderRadius: "999px",
+                          fontSize: "0.8rem",
+                          fontWeight: 600,
+                          background: "#ffffff",
+                          color: "#1e293b",
+                          border: "1px solid #f3d5e6",
+                        }}
+                      >
+                        Officially Enrolled:{" "}
+                        <strong>{analytics.portal_officially_enrolled}</strong>
+                      </span>
+                      <span
+                        style={{
+                          padding: "5px 11px",
+                          borderRadius: "999px",
+                          fontSize: "0.8rem",
+                          fontWeight: 600,
+                          background:
+                            analytics.portal_pending_verification > 0
+                              ? "#fef3c7"
+                              : "#ffffff",
+                          color:
+                            analytics.portal_pending_verification > 0
+                              ? "#92400e"
+                              : "#475569",
+                          border: "1px solid #fde68a",
+                        }}
+                      >
+                        Pending / Not Yet Enrolled:{" "}
+                        <strong>{analytics.portal_pending_verification}</strong>
+                      </span>
+                      <span
+                        style={{
+                          padding: "5px 11px",
+                          borderRadius: "999px",
+                          fontSize: "0.8rem",
+                          fontWeight: 600,
+                          background: "#ffffff",
+                          color: "#1e293b",
+                          border: "1px solid #f3d5e6",
+                        }}
+                      >
+                        Total Registered:{" "}
+                        <strong>{analytics.portal_registered_total}</strong>
+                      </span>
+                    </div>
                     <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
                       <button
                         type="button"
