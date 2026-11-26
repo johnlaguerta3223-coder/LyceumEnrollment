@@ -1,0 +1,23 @@
+{
+  "short_name": "LKA Portal",
+  "name": "Lyceum ng Kabataan Academy Portal",
+  "description": "Web-Based Enrollment, Smart Tuition Ledger, and Exam Clearance System for Lyceum ng Kabataan Academy, Inc.",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#d43783",
+  "background_color": "#fff5f9"
+}
