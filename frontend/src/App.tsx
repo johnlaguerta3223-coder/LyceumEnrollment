@@ -88,6 +88,26 @@ function App() {
   const [netProfile, setNetProfile] = useState<NetworkProfile>(() =>
     detectNetworkProfile()
   );
+  const [installPrompt, setInstallPrompt] = useState<any>(null);
+  const [installDismissed, setInstallDismissed] = useState<boolean>(false);
+
+  useEffect(() => {
+    const handler = (e: Event) => {
+      e.preventDefault();
+      setInstallPrompt(e);
+    };
+    window.addEventListener("beforeinstallprompt", handler);
+    return () => window.removeEventListener("beforeinstallprompt", handler);
+  }, []);
+
+  const handleInstallApp = async () => {
+    if (!installPrompt) return;
+    installPrompt.prompt();
+    const choice = await installPrompt.userChoice;
+    if (choice?.outcome === "accepted") {
+      setInstallPrompt(null);
+    }
+  };
 
   const setPage = (nextPage: AppPage) => {
     localStorage.setItem("lka_current_page", nextPage);
@@ -196,24 +216,110 @@ function App() {
     );
   }
 
+  const renderInstallPopup = () => {
+    if (!installPrompt || installDismissed) return null;
+    return (
+      <div
+        style={{
+          position: "fixed",
+          bottom: "18px",
+          right: "18px",
+          zIndex: 9998,
+          background: "#ffffff",
+          border: "1px solid #f3c4dc",
+          borderRadius: "14px",
+          padding: "12px 14px",
+          boxShadow: "0 14px 34px rgba(15, 23, 42, 0.16)",
+          display: "flex",
+          alignItems: "center",
+          gap: "12px",
+          maxWidth: "330px",
+        }}
+      >
+        <img
+          src="/logo.jpg"
+          alt="LKA"
+          style={{
+            width: "38px",
+            height: "38px",
+            borderRadius: "50%",
+            objectFit: "cover",
+            flexShrink: 0,
+          }}
+        />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <strong style={{ display: "block", fontSize: "0.84rem", color: "#111827" }}>
+            LKA Portal App
+          </strong>
+          <span style={{ display: "block", fontSize: "0.73rem", color: "#64748b" }}>
+            Install for quick desktop access
+          </span>
+        </div>
+        <button
+          type="button"
+          className="table-pay-btn"
+          style={{ width: "auto", padding: "7px 13px", flexShrink: 0 }}
+          onClick={handleInstallApp}
+        >
+          Install
+        </button>
+        <button
+          type="button"
+          onClick={() => setInstallDismissed(true)}
+          aria-label="Close install prompt"
+          style={{
+            background: "transparent",
+            border: "none",
+            color: "#94a3b8",
+            fontWeight: 700,
+            fontSize: "1.05rem",
+            cursor: "pointer",
+            padding: "2px 4px",
+            lineHeight: 1,
+          }}
+        >
+          ×
+        </button>
+      </div>
+    );
+  };
+
   if (page === "student_portal" && token) {
-    return <StudentDashboard token={token} onLogout={handleLogout} />;
+    return (
+      <>
+        <StudentDashboard token={token} onLogout={handleLogout} />
+        {renderInstallPopup()}
+      </>
+    );
   }
 
   if (page === "registrar_portal" && token) {
-    return <RegistrarDashboard token={token} onLogout={handleLogout} />;
+    return (
+      <>
+        <RegistrarDashboard token={token} onLogout={handleLogout} />
+        {renderInstallPopup()}
+      </>
+    );
   }
 
   if (page === "admin_portal" && token) {
-    return <AdminDashboard token={token} onLogout={handleLogout} />;
+    return (
+      <>
+        <AdminDashboard token={token} onLogout={handleLogout} />
+        {renderInstallPopup()}
+      </>
+    );
   }
 
   return (
-    <LoginForm
-      key={page === "enroll" ? "enroll" : "login"}
-      initialView={page === "enroll" ? "register" : "login"}
-      onLoginSuccess={handleLoginSuccess}
-    />
+    <>
+      <LoginForm
+        key={page === "enroll" ? "enroll" : "login"}
+        initialView={page === "enroll" ? "register" : "login"}
+        onLoginSuccess={handleLoginSuccess}
+      />
+      {renderInstallPopup()}
+    </>
   );
 }
 

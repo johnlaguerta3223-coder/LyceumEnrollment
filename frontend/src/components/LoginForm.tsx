@@ -1,5 +1,5 @@
 import { API_BASE } from "../api";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import axios from "axios";
 import {
   IconCalculator,
@@ -390,25 +390,6 @@ export default function LoginForm({
 
   const [status, setStatus] = useState<Status>(null);
   const [loading, setLoading] = useState(false);
-  const [installPrompt, setInstallPrompt] = useState<any>(null);
-
-  useEffect(() => {
-    const handler = (e: Event) => {
-      e.preventDefault();
-      setInstallPrompt(e);
-    };
-    window.addEventListener("beforeinstallprompt", handler);
-    return () => window.removeEventListener("beforeinstallprompt", handler);
-  }, []);
-
-  const handleInstallApp = async () => {
-    if (!installPrompt) return;
-    installPrompt.prompt();
-    const choice = await installPrompt.userChoice;
-    if (choice?.outcome === "accepted") {
-      setInstallPrompt(null);
-    }
-  };
   const [registeredSlip, setRegisteredSlip] = useState<{
     student_id_no: string;
     student_name: string;
@@ -895,18 +876,6 @@ export default function LoginForm({
                 Enroll Now
               </button>
             </div>
-            {installPrompt && (
-              <div style={{ padding: "0 24px 20px", textAlign: "center" }}>
-                <button
-                  type="button"
-                  className="register-switch-btn"
-                  style={{ width: "100%", fontSize: "0.82rem" }}
-                  onClick={handleInstallApp}
-                >
-                  Install LKA Portal App to Desktop / Home Screen
-                </button>
-              </div>
-            )}
           </div>
         )}
 
